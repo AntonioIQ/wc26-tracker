@@ -1,0 +1,15 @@
+{
+  "name": "quiniela-mundial",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Scaffold base para una quiniela del Mundial con costo operativo cero.",
+  "scripts": {
+    "validate": "node scripts/validate.js",
+    "score": "node scripts/score.js",
+    "import:picks": "node scripts/import-picks.js",
+    "build:site": "node scripts/build-site.js",
+    "build": "npm run validate && npm run score && npm run build:site",
+    "ingest": "node scripts/ingest-results.js",
+    "serve": "node scripts/serve.js"
+  }
+}

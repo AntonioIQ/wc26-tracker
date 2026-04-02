@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiniela Mundial</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Operacion austera, datos auditables</p>
+        <h1 id="tournament-name">Quiniela Mundial</h1>
+        <p class="hero-copy">
+          Sitio estatico publicado en GitHub Pages con datos versionados en el
+          repositorio y scoring reproducible.
+        </p>
+        <div class="hero-actions">
+          <span class="pill" id="tournament-timezone">UTC</span>
+          <span class="pill" id="generation-time">Sin generar</span>
+        </div>
+      </section>
+
+      <section class="overview-grid">
+        <article class="panel stat-card">
+          <p class="stat-label">Partidos</p>
+          <p class="stat-value" id="stat-matches">0</p>
+        </article>
+        <article class="panel stat-card">
+          <p class="stat-label">Cerrados</p>
+          <p class="stat-value" id="stat-locked">0</p>
+        </article>
+        <article class="panel stat-card">
+          <p class="stat-label">Participantes</p>
+          <p class="stat-value" id="stat-players">0</p>
+        </article>
+        <article class="panel stat-card">
+          <p class="stat-label">Actualizacion</p>
+          <p class="stat-value small" id="stat-updated">Pendiente</p>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Calendario</p>
+              <h2>Partidos y cierres</h2>
+            </div>
+            <span class="subtle" id="matches-summary">0 partidos</span>
+          </div>
+          <div id="matches-list" class="match-list"></div>
+        </article>
+
+        <article class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Leaderboard</p>
+              <h2>Tabla general</h2>
+            </div>
+            <span class="subtle" id="leaderboard-summary">0 participantes</span>
+          </div>
+          <div id="leaderboard-list" class="leaderboard-list"></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Tu quiniela</p>
+            <h2>Captura y exportacion local</h2>
+          </div>
+          <span class="subtle" id="editor-summary">Sin capturar</span>
+        </div>
+
+        <form id="pick-form" class="pick-form">
+          <div class="identity-grid">
+            <label class="field">
+              <span>Alias tecnico</span>
+              <input
+                id="user-id"
+                name="userId"
+                type="text"
+                placeholder="ej. jose-tapia"
+                autocomplete="off"
+              />
+            </label>
+            <label class="field">
+              <span>Nombre visible</span>
+              <input
+                id="display-name"
+                name="displayName"
+                type="text"
+                placeholder="ej. Jose Antonio"
+                autocomplete="off"
+              />
+            </label>
+          </div>
+
+          <div id="pick-editor" class="pick-editor"></div>
+
+          <div class="form-actions">
+            <button type="button" id="save-draft" class="action-button primary">
+              Guardar borrador
+            </button>
+            <button type="button" id="export-picks" class="action-button">
+              Exportar JSON
+            </button>
+            <button type="button" id="clear-draft" class="action-button ghost">
+              Limpiar borrador
+            </button>
+          </div>
+
+          <p id="form-status" class="form-status">
+            El borrador se guarda localmente en este navegador.
+          </p>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Operacion</p>
+            <h2>Estado del sistema</h2>
+          </div>
+        </div>
+        <div id="system-notes" class="notes-grid"></div>
+      </section>
+    </main>
+
+    <template id="match-template">
+      <article class="match-card">
+        <div class="match-topline">
+          <span class="badge stage-badge"></span>
+          <span class="badge status-badge"></span>
+        </div>
+        <div class="teams">
+          <div class="team-row">
+            <span class="team-name home-team"></span>
+            <span class="team-score home-score"></span>
+          </div>
+          <div class="team-row">
+            <span class="team-name away-team"></span>
+            <span class="team-score away-score"></span>
+          </div>
+        </div>
+        <dl class="meta-grid">
+          <div>
+            <dt>Kickoff</dt>
+            <dd class="kickoff-value"></dd>
+          </div>
+          <div>
+            <dt>Cierre</dt>
+            <dd class="lock-value"></dd>
+          </div>
+          <div>
+            <dt>Sede</dt>
+            <dd class="venue-value"></dd>
+          </div>
+          <div>
+            <dt>Grupo</dt>
+            <dd class="group-value"></dd>
+          </div>
+        </dl>
+      </article>
+    </template>
+
+    <template id="leaderboard-template">
+      <article class="leaderboard-row">
+        <div class="rank-slot"></div>
+        <div>
+          <p class="player-name"></p>
+          <p class="player-id"></p>
+        </div>
+        <div class="points-slot"></div>
+      </article>
+    </template>
+
+    <template id="pick-row-template">
+      <article class="pick-row">
+        <div class="pick-match-copy">
+          <p class="pick-match-title"></p>
+          <p class="pick-match-meta"></p>
+        </div>
+        <div class="pick-inputs">
+          <label class="score-field">
+            <span class="sr-only">Marcador local</span>
+            <input class="pick-home-score" type="number" min="0" max="20" inputmode="numeric" />
+          </label>
+          <span class="score-separator">-</span>
+          <label class="score-field">
+            <span class="sr-only">Marcador visitante</span>
+            <input class="pick-away-score" type="number" min="0" max="20" inputmode="numeric" />
+          </label>
+        </div>
+        <p class="pick-lock-note"></p>
+      </article>
+    </template>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

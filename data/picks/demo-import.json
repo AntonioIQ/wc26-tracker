@@ -1,0 +1,22 @@
+{
+  "userId": "demo-import",
+  "displayName": "Demo Import",
+  "submittedAtUtc": "2026-06-10T20:00:00Z",
+  "picks": [
+    {
+      "matchId": "match-001",
+      "homeScore": 1,
+      "awayScore": 0
+    },
+    {
+      "matchId": "match-002",
+      "homeScore": 2,
+      "awayScore": 2
+    },
+    {
+      "matchId": "match-003",
+      "homeScore": 1,
+      "awayScore": 1
+    }
+  ]
+}

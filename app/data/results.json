@@ -1,0 +1,31 @@
+{
+  "results": [
+    {
+      "matchId": "match-001",
+      "status": "finished",
+      "homeScore": 2,
+      "awayScore": 1,
+      "winner": "home",
+      "source": "manual",
+      "updatedAtUtc": "2026-06-11T20:05:00Z"
+    },
+    {
+      "matchId": "match-002",
+      "status": "scheduled",
+      "homeScore": null,
+      "awayScore": null,
+      "winner": null,
+      "source": "manual",
+      "updatedAtUtc": "2026-03-20T00:00:00Z"
+    },
+    {
+      "matchId": "match-003",
+      "status": "scheduled",
+      "homeScore": null,
+      "awayScore": null,
+      "winner": null,
+      "source": "manual",
+      "updatedAtUtc": "2026-03-20T00:00:00Z"
+    }
+  ]
+}

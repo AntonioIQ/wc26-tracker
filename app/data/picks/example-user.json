@@ -1,0 +1,22 @@
+{
+  "userId": "example-user",
+  "displayName": "Usuario Demo",
+  "submittedAtUtc": "2026-03-20T00:00:00Z",
+  "picks": [
+    {
+      "matchId": "match-001",
+      "homeScore": 2,
+      "awayScore": 0
+    },
+    {
+      "matchId": "match-002",
+      "homeScore": 1,
+      "awayScore": 1
+    },
+    {
+      "matchId": "match-003",
+      "homeScore": 3,
+      "awayScore": 1
+    }
+  ]
+}
