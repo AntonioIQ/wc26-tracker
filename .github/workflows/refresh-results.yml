@@ -2,10 +2,14 @@ name: Refresh Results
 
 on:
   schedule:
-    # Cada 15 min durante dias de partido (jun 11 - jul 19)
-    # Fuera de temporada se puede desactivar
     - cron: "*/15 * * * *"
   workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   refresh:
@@ -18,7 +22,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Ingest results from API
         env:
