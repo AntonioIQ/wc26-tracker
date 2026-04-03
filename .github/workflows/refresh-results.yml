@@ -2,7 +2,9 @@ name: Refresh Results
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    # Cada 15 min durante dias de partido (jun 11 - jul 19)
+    # Fuera de temporada se puede desactivar
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -18,11 +20,22 @@ jobs:
         with:
           node-version: 20
 
-      - name: Attempt ingest
+      - name: Ingest results from API
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
         run: node scripts/ingest-results.js
 
-      - name: Rebuild static artifacts
+      - name: Recalculate leaderboard
         run: npm run build
 
-      - name: No-op note
-        run: echo "Agregar commit automatizado solo cuando la fuente externa este definida y sea segura."
+      - name: Commit changes if any
+        run: |
+          git config user.name "J Antonio Tapia"
+          git config user.email "j.anton.tg@gmail.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Sin cambios"
+          else
+            git commit -m "auto: actualizar resultados"
+            git push
+          fi

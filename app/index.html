@@ -3,199 +3,96 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quiniela Mundial</title>
+    <title>Quiniela Mundial 2026</title>
     <link rel="stylesheet" href="./styles.css" />
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
   <body>
-    <main class="shell">
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="shell auth-screen">
+      <div class="wc-logo">⚽🏆</div>
+      <h1>Quiniela Mundial 2026</h1>
+      <p class="auth-subtitle">🇲🇽 🇺🇸 🇨🇦 &mdash; Inicia sesión para participar</p>
+      <button class="auth-btn" id="btn-login">Entrar</button>
+    </div>
+
+    <!-- MAIN APP (hidden until login) -->
+    <main id="app-main" class="shell" style="display:none">
+
+      <!-- HERO -->
       <section class="hero">
-        <p class="eyebrow">Operacion austera, datos auditables</p>
-        <h1 id="tournament-name">Quiniela Mundial</h1>
-        <p class="hero-copy">
-          Sitio estatico publicado en GitHub Pages con datos versionados en el
-          repositorio y scoring reproducible.
-        </p>
-        <div class="hero-actions">
+        <div class="hero-logo">⚽🏆</div>
+        <h1 id="tournament-name">Quiniela Mundial 2026</h1>
+        <div class="hero-meta">
           <span class="pill" id="tournament-timezone">UTC</span>
-          <span class="pill" id="generation-time">Sin generar</span>
+          <span class="pill user-pill" id="user-display">—</span>
+          <button class="auth-btn logout" id="btn-logout">Salir</button>
         </div>
       </section>
 
-      <section class="overview-grid">
-        <article class="panel stat-card">
-          <p class="stat-label">Partidos</p>
+      <!-- STATS -->
+      <section class="stats-grid">
+        <article class="stat-card">
           <p class="stat-value" id="stat-matches">0</p>
+          <p class="stat-label">Partidos</p>
         </article>
-        <article class="panel stat-card">
-          <p class="stat-label">Cerrados</p>
+        <article class="stat-card">
           <p class="stat-value" id="stat-locked">0</p>
+          <p class="stat-label">Cerrados</p>
         </article>
-        <article class="panel stat-card">
-          <p class="stat-label">Participantes</p>
+        <article class="stat-card">
           <p class="stat-value" id="stat-players">0</p>
+          <p class="stat-label">Participantes</p>
         </article>
-        <article class="panel stat-card">
-          <p class="stat-label">Actualizacion</p>
-          <p class="stat-value small" id="stat-updated">Pendiente</p>
-        </article>
-      </section>
-
-      <section class="content-grid">
-        <article class="panel">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Calendario</p>
-              <h2>Partidos y cierres</h2>
-            </div>
-            <span class="subtle" id="matches-summary">0 partidos</span>
-          </div>
-          <div id="matches-list" class="match-list"></div>
-        </article>
-
-        <article class="panel">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Leaderboard</p>
-              <h2>Tabla general</h2>
-            </div>
-            <span class="subtle" id="leaderboard-summary">0 participantes</span>
-          </div>
-          <div id="leaderboard-list" class="leaderboard-list"></div>
+        <article class="stat-card">
+          <p class="stat-value" id="stat-finished">0</p>
+          <p class="stat-label">Jugados</p>
         </article>
       </section>
 
-      <section class="panel">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Tu quiniela</p>
-            <h2>Captura y exportacion local</h2>
-          </div>
-          <span class="subtle" id="editor-summary">Sin capturar</span>
+      <!-- TABS -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="tab-matches" role="tab">🏟️ Partidos</button>
+        <button class="nav-tab" data-tab="tab-picks" role="tab">📝 Mi Quiniela</button>
+        <button class="nav-tab" data-tab="tab-leaderboard" role="tab">🏅 Tabla</button>
+      </nav>
+
+      <!-- TAB: PARTIDOS -->
+      <div id="tab-matches" class="tab-panel active">
+        <div id="matches-container"></div>
+      </div>
+
+      <!-- TAB: MI QUINIELA -->
+      <div id="tab-picks" class="tab-panel">
+        <div class="pick-summary" id="pick-summary">
+          <strong>0</strong> de <strong>0</strong> picks capturados
         </div>
-
-        <form id="pick-form" class="pick-form">
-          <div class="identity-grid">
-            <label class="field">
-              <span>Alias tecnico</span>
-              <input
-                id="user-id"
-                name="userId"
-                type="text"
-                placeholder="ej. jose-tapia"
-                autocomplete="off"
-              />
-            </label>
-            <label class="field">
-              <span>Nombre visible</span>
-              <input
-                id="display-name"
-                name="displayName"
-                type="text"
-                placeholder="ej. Jose Antonio"
-                autocomplete="off"
-              />
-            </label>
-          </div>
-
-          <div id="pick-editor" class="pick-editor"></div>
-
-          <div class="form-actions">
-            <button type="button" id="save-draft" class="action-button primary">
-              Guardar borrador
-            </button>
-            <button type="button" id="export-picks" class="action-button">
-              Exportar JSON
-            </button>
-            <button type="button" id="clear-draft" class="action-button ghost">
-              Limpiar borrador
-            </button>
-          </div>
-
-          <p id="form-status" class="form-status">
-            El borrador se guarda localmente en este navegador.
-          </p>
-        </form>
-      </section>
-
-      <section class="panel">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Operacion</p>
-            <h2>Estado del sistema</h2>
-          </div>
+        <div id="pick-editor"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="btn-save-picks">💾 Guardar picks</button>
+          <button class="btn btn-secondary" id="btn-export-picks">📤 Exportar JSON</button>
+          <button class="btn btn-danger" id="btn-clear-picks">🗑️ Limpiar</button>
         </div>
-        <div id="system-notes" class="notes-grid"></div>
-      </section>
+        <p class="form-status" id="form-status"></p>
+      </div>
+
+      <!-- TAB: LEADERBOARD -->
+      <div id="tab-leaderboard" class="tab-panel">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Jugador</th>
+              <th style="text-align:right">Puntos</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+        <p class="form-status" id="leaderboard-updated"></p>
+      </div>
+
     </main>
-
-    <template id="match-template">
-      <article class="match-card">
-        <div class="match-topline">
-          <span class="badge stage-badge"></span>
-          <span class="badge status-badge"></span>
-        </div>
-        <div class="teams">
-          <div class="team-row">
-            <span class="team-name home-team"></span>
-            <span class="team-score home-score"></span>
-          </div>
-          <div class="team-row">
-            <span class="team-name away-team"></span>
-            <span class="team-score away-score"></span>
-          </div>
-        </div>
-        <dl class="meta-grid">
-          <div>
-            <dt>Kickoff</dt>
-            <dd class="kickoff-value"></dd>
-          </div>
-          <div>
-            <dt>Cierre</dt>
-            <dd class="lock-value"></dd>
-          </div>
-          <div>
-            <dt>Sede</dt>
-            <dd class="venue-value"></dd>
-          </div>
-          <div>
-            <dt>Grupo</dt>
-            <dd class="group-value"></dd>
-          </div>
-        </dl>
-      </article>
-    </template>
-
-    <template id="leaderboard-template">
-      <article class="leaderboard-row">
-        <div class="rank-slot"></div>
-        <div>
-          <p class="player-name"></p>
-          <p class="player-id"></p>
-        </div>
-        <div class="points-slot"></div>
-      </article>
-    </template>
-
-    <template id="pick-row-template">
-      <article class="pick-row">
-        <div class="pick-match-copy">
-          <p class="pick-match-title"></p>
-          <p class="pick-match-meta"></p>
-        </div>
-        <div class="pick-inputs">
-          <label class="score-field">
-            <span class="sr-only">Marcador local</span>
-            <input class="pick-home-score" type="number" min="0" max="20" inputmode="numeric" />
-          </label>
-          <span class="score-separator">-</span>
-          <label class="score-field">
-            <span class="sr-only">Marcador visitante</span>
-            <input class="pick-away-score" type="number" min="0" max="20" inputmode="numeric" />
-          </label>
-        </div>
-        <p class="pick-lock-note"></p>
-      </article>
-    </template>
 
     <script type="module" src="./app.js"></script>
   </body>

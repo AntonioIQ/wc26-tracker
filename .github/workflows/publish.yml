@@ -1,22 +1,16 @@
-name: Publish
+name: Recalculate on Push
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+    paths:
+      - 'data/picks/**'
+      - 'data/results.json'
+      - 'data/overrides.json'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
-  build-and-publish:
+  recalculate:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,26 +22,17 @@ jobs:
         with:
           node-version: 20
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Build data artifacts
+      - name: Validate and recalculate
         run: npm run build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: app
-
-  deploy:
-    needs: build-and-publish
-    runs-on: ubuntu-latest
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Commit leaderboard if changed
+        run: |
+          git config user.name "J Antonio Tapia"
+          git config user.email "j.anton.tg@gmail.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Sin cambios"
+          else
+            git commit -m "auto: recalcular tabla"
+            git push
+          fi

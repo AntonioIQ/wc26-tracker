@@ -1,15 +1,15 @@
 {
-  "generatedAtUtc": "2026-03-20T23:29:34.898Z",
+  "generatedAtUtc": "2026-04-03T00:08:34.401Z",
   "entries": [
     {
       "userId": "demo-import",
       "displayName": "Demo Import",
-      "totalPoints": 1
+      "totalPoints": 0
     },
     {
       "userId": "example-user",
       "displayName": "Usuario Demo",
-      "totalPoints": 1
+      "totalPoints": 0
     }
   ]
 }

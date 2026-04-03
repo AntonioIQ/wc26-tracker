@@ -1,406 +1,454 @@
-const DATA_FILES = {
+/* === Quiniela Mundial 2026 — App === */
+
+const DATA = {
   matches: "./data/matches.json",
   results: "./data/results.json",
   leaderboard: "./data/leaderboard.json",
   overrides: "./data/overrides.json"
 };
-const STORAGE_KEY = "quiniela-mundial-local-draft";
 
-async function readJson(path) {
-  const response = await fetch(path, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(`No se pudo cargar ${path}`);
-  }
-  return response.json();
+const FLAGS = {
+  "Mexico": "🇲🇽", "South Africa": "🇿🇦", "South Korea": "🇰🇷", "Czechia": "🇨🇿",
+  "Canada": "🇨🇦", "Bosnia and Herzegovina": "🇧🇦", "Qatar": "🇶🇦", "Switzerland": "🇨🇭",
+  "United States": "🇺🇸", "Paraguay": "🇵🇾", "Australia": "🇦🇺", "Turkey": "🇹🇷",
+  "Brazil": "🇧🇷", "Morocco": "🇲🇦", "Haiti": "🇭🇹", "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  "Germany": "🇩🇪", "Curacao": "🇨🇼", "Netherlands": "🇳🇱", "Japan": "🇯🇵",
+  "Ivory Coast": "🇨🇮", "Ecuador": "🇪🇨", "Sweden": "🇸🇪", "Tunisia": "🇹🇳",
+  "Spain": "🇪🇸", "Cape Verde": "🇨🇻", "Belgium": "🇧🇪", "Egypt": "🇪🇬",
+  "Saudi Arabia": "🇸🇦", "Uruguay": "🇺🇾", "Iran": "🇮🇷", "New Zealand": "🇳🇿",
+  "France": "🇫🇷", "Senegal": "🇸🇳", "Iraq": "🇮🇶", "Norway": "🇳🇴",
+  "Argentina": "🇦🇷", "Algeria": "🇩🇿", "Austria": "🇦🇹", "Jordan": "🇯🇴",
+  "Portugal": "🇵🇹", "DR Congo": "🇨🇩", "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Croatia": "🇭🇷",
+  "Ghana": "🇬🇭", "Panama": "🇵🇦", "Uzbekistan": "🇺🇿", "Colombia": "🇨🇴"
+};
+
+const STAGE_LABELS = {
+  "group": "Fase de Grupos", "round-of-32": "Treintaidosavos",
+  "round-of-16": "Octavos de Final", "quarterfinal": "Cuartos de Final",
+  "semifinal": "Semifinal", "third-place": "Tercer Lugar", "final": "Final"
+};
+
+const STAGE_BADGE = {
+  "group": "badge-group", "round-of-32": "badge-r32",
+  "round-of-16": "badge-r16", "quarterfinal": "badge-qf",
+  "semifinal": "badge-sf", "third-place": "badge-final", "final": "badge-final"
+};
+
+const STORAGE_KEY = "quiniela-wc26-draft";
+let currentUser = null;
+let allMatches = [];
+
+/* === UTILS === */
+async function fetchJson(url) {
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error(`Error cargando ${url}`);
+  return r.json();
 }
 
-function formatDate(dateValue) {
-  if (!dateValue) {
-    return "Pendiente";
-  }
+function flag(team) { return FLAGS[team] || "🏳️"; }
 
+function fmtDate(utc) {
+  if (!utc) return "—";
   return new Intl.DateTimeFormat("es-MX", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(dateValue));
+    weekday: "short", month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: true
+  }).format(new Date(utc));
 }
 
-function formatStatus(status) {
-  const labels = {
-    finished: "Finalizado",
-    scheduled: "Programado",
-    live: "En juego"
-  };
+function fmtScore(s) { return s !== null && s !== undefined ? String(s) : "-"; }
 
-  return labels[status] || "Desconocido";
+function slugify(v) {
+  return String(v || "").trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-function formatStage(match) {
-  if (match.stage === "group" && match.group) {
-    return `Grupo ${match.group}`;
-  }
+/* === AUTH (Netlify Identity) === */
+function initAuth() {
+  const loginBtn = document.getElementById("btn-login");
+  const logoutBtn = document.getElementById("btn-logout");
 
-  return match.stage || "Sin etapa";
-}
+  loginBtn.addEventListener("click", () => {
+    netlifyIdentity.open("login");
+  });
 
-function scoreText(score) {
-  return Number.isFinite(score) ? String(score) : "-";
-}
+  logoutBtn.addEventListener("click", () => {
+    netlifyIdentity.logout();
+  });
 
-function normalizeText(value) {
-  return String(value || "").trim();
-}
+  netlifyIdentity.on("login", (user) => {
+    currentUser = user;
+    showApp();
+    netlifyIdentity.close();
+  });
 
-function slugify(value) {
-  return normalizeText(value)
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
+  netlifyIdentity.on("logout", () => {
+    currentUser = null;
+    showAuth();
+  });
 
-function getStoredDraft() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (error) {
-    console.warn("No se pudo leer el borrador local.", error);
-    return null;
+  // Check if already logged in
+  const user = netlifyIdentity.currentUser();
+  if (user) {
+    currentUser = user;
+    showApp();
+  } else {
+    showAuth();
   }
 }
 
-function saveStoredDraft(draft) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+function showAuth() {
+  document.getElementById("auth-screen").style.display = "";
+  document.getElementById("app-main").style.display = "none";
 }
 
-function clearStoredDraft() {
-  localStorage.removeItem(STORAGE_KEY);
+function showApp() {
+  document.getElementById("auth-screen").style.display = "none";
+  document.getElementById("app-main").style.display = "";
+  const name = currentUser?.user_metadata?.full_name || currentUser?.email || "Jugador";
+  document.getElementById("user-display").textContent = `👤 ${name}`;
+  boot();
 }
 
-function mergeMatchesWithResults(matches, results, overrides) {
-  const baseResults = new Map(results.map((result) => [result.matchId, result]));
-  const overrideResults = new Map((overrides.results || []).map((result) => [result.matchId, result]));
-
-  return matches.map((match) => {
-    const raw = overrideResults.get(match.id) || baseResults.get(match.id) || {};
-    return {
-      ...match,
-      result: raw,
-      displayStatus: raw.status || match.status || "scheduled"
-    };
+/* === TABS === */
+function initTabs() {
+  const tabs = document.querySelectorAll(".nav-tab");
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab).classList.add("active");
+    });
   });
 }
 
-function renderEmpty(container, message) {
-  container.innerHTML = `<div class="empty-state">${message}</div>`;
-}
-
-function renderMatches(items) {
-  const container = document.querySelector("#matches-list");
-  const summary = document.querySelector("#matches-summary");
-  const template = document.querySelector("#match-template");
-
-  summary.textContent = `${items.length} partidos`;
-
-  if (!items.length) {
-    renderEmpty(container, "No hay partidos cargados todavia.");
-    return;
-  }
-
+/* === RENDER MATCHES === */
+function renderMatches(matches) {
+  const container = document.getElementById("matches-container");
   container.innerHTML = "";
 
-  for (const item of items) {
-    const fragment = template.content.cloneNode(true);
-    fragment.querySelector(".stage-badge").textContent = formatStage(item);
-    const statusNode = fragment.querySelector(".status-badge");
-    statusNode.textContent = formatStatus(item.displayStatus);
-    statusNode.classList.add(`status-${item.displayStatus}`);
-    fragment.querySelector(".home-team").textContent = item.homeTeam;
-    fragment.querySelector(".away-team").textContent = item.awayTeam;
-    fragment.querySelector(".home-score").textContent = scoreText(item.result.homeScore);
-    fragment.querySelector(".away-score").textContent = scoreText(item.result.awayScore);
-    fragment.querySelector(".kickoff-value").textContent = formatDate(item.kickoffUtc);
-    fragment.querySelector(".lock-value").textContent = formatDate(item.lockUtc);
-    fragment.querySelector(".venue-value").textContent = item.venue || "Pendiente";
-    fragment.querySelector(".group-value").textContent = item.group || "-";
-    container.appendChild(fragment);
+  // Group by stage
+  const stages = {};
+  for (const m of matches) {
+    const key = m.stage === "group" ? `group-${m.group}` : m.stage;
+    if (!stages[key]) stages[key] = [];
+    stages[key].push(m);
+  }
+
+  for (const [key, items] of Object.entries(stages)) {
+    const section = document.createElement("div");
+    section.className = "group-section";
+
+    const isGroup = key.startsWith("group-");
+    const groupLetter = isGroup ? key.split("-")[1] : null;
+    const label = isGroup ? `Grupo ${groupLetter}` : (STAGE_LABELS[key] || key);
+    const teams = isGroup
+      ? [...new Set(items.flatMap(m => [m.homeTeam, m.awayTeam]))]
+          .map(t => `${flag(t)} ${t}`).join(" · ")
+      : "";
+
+    section.innerHTML = `
+      <div class="group-header">
+        <h3>${label}</h3>
+        <span class="group-teams">${teams}</span>
+      </div>
+    `;
+
+    for (const m of items) {
+      section.appendChild(createMatchCard(m));
+    }
+    container.appendChild(section);
   }
 }
 
-function renderLeaderboard(entries, generatedAtUtc) {
-  const container = document.querySelector("#leaderboard-list");
-  const summary = document.querySelector("#leaderboard-summary");
-  const template = document.querySelector("#leaderboard-template");
+function createMatchCard(m) {
+  const card = document.createElement("article");
+  const statusClass = m.displayStatus === "live" ? "is-live" : m.displayStatus === "finished" ? "is-finished" : "";
+  card.className = `match-card ${statusClass}`;
 
-  summary.textContent = `${entries.length} participantes`;
+  const badgeClass = m.stage === "group" ? "badge-group" : (STAGE_BADGE[m.stage] || "badge-scheduled");
+  const stageLabel = m.stage === "group" ? `Grupo ${m.group}` : (STAGE_LABELS[m.stage] || m.stage);
+  const statusBadge = m.displayStatus === "live" ? "badge-live"
+    : m.displayStatus === "finished" ? "badge-finished" : "badge-scheduled";
+  const statusLabel = m.displayStatus === "live" ? "EN VIVO"
+    : m.displayStatus === "finished" ? "FINAL" : "PROG";
+
+  card.innerHTML = `
+    <div class="match-topline">
+      <span class="badge ${badgeClass}">${stageLabel}</span>
+      <span class="badge ${statusBadge}">${statusLabel}</span>
+      <span class="match-date">${fmtDate(m.kickoffUtc)}</span>
+    </div>
+    <div class="teams-row">
+      <div class="team-block home">
+        <span class="team-flag">${flag(m.homeTeam)}</span>
+        <span class="team-name">${m.homeTeam}</span>
+      </div>
+      <div class="score-display">
+        <span>${fmtScore(m.result?.homeScore)}</span>
+        <span class="sep">-</span>
+        <span>${fmtScore(m.result?.awayScore)}</span>
+      </div>
+      <div class="team-block away">
+        <span class="team-flag">${flag(m.awayTeam)}</span>
+        <span class="team-name">${m.awayTeam}</span>
+      </div>
+    </div>
+    <p class="match-venue">${m.venue || "Sede por confirmar"}</p>
+  `;
+  return card;
+}
+
+/* === RENDER LEADERBOARD === */
+function renderLeaderboard(entries, generatedAt) {
+  const body = document.getElementById("leaderboard-body");
+  body.innerHTML = "";
 
   if (!entries.length) {
-    renderEmpty(container, "Todavia no hay participantes importados.");
+    body.innerHTML = `<tr><td colspan="3" class="empty-state">Sin participantes aún</td></tr>`;
     return;
   }
 
-  container.innerHTML = "";
-
-  entries.forEach((entry, index) => {
-    const fragment = template.content.cloneNode(true);
-    fragment.querySelector(".rank-slot").textContent = index + 1;
-    fragment.querySelector(".player-name").textContent = entry.displayName;
-    fragment.querySelector(".player-id").textContent = entry.userId;
-    fragment.querySelector(".points-slot").textContent = entry.totalPoints;
-    container.appendChild(fragment);
+  entries.forEach((e, i) => {
+    const rankClass = i < 3 ? `rank-${i + 1}` : "";
+    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="rank-cell ${rankClass}">${medal}</td>
+      <td>
+        <span>${e.displayName}</span>
+        <span class="player-id-cell"> · ${e.userId}</span>
+      </td>
+      <td class="points-cell">${e.totalPoints}</td>
+    `;
+    body.appendChild(tr);
   });
 
-  document.querySelector("#generation-time").textContent = `Tabla: ${formatDate(generatedAtUtc)}`;
+  document.getElementById("leaderboard-updated").textContent =
+    generatedAt ? `Actualizado: ${fmtDate(generatedAt)}` : "";
 }
 
-function renderStats(matches, leaderboard, lastResultUpdate) {
+/* === RENDER STATS === */
+function renderStats(matches, leaderboard) {
   const now = Date.now();
-  const locked = matches.filter((item) => Date.parse(item.lockUtc) <= now).length;
+  const locked = matches.filter(m => Date.parse(m.lockUtc) <= now).length;
+  const finished = matches.filter(m => m.displayStatus === "finished").length;
 
-  document.querySelector("#stat-matches").textContent = matches.length;
-  document.querySelector("#stat-locked").textContent = locked;
-  document.querySelector("#stat-players").textContent = leaderboard.entries.length;
-  document.querySelector("#stat-updated").textContent = formatDate(lastResultUpdate);
+  document.getElementById("stat-matches").textContent = matches.length;
+  document.getElementById("stat-locked").textContent = locked;
+  document.getElementById("stat-players").textContent = leaderboard.entries?.length || 0;
+  document.getElementById("stat-finished").textContent = finished;
 }
 
-function renderNotes({ matches, leaderboard, overrides }) {
-  const notes = [
-    {
-      title: "Fuente de verdad",
-      body: "Los datos publicados salen del repositorio. Si una automatizacion falla, el sitio sigue mostrando el ultimo estado valido."
-    },
-    {
-      title: "Correcciones",
-      body: `Overrides activos: ${(overrides.results || []).length}. Este archivo debe ganar sobre cualquier ingest automatizado.`
-    },
-    {
-      title: "Recalculo",
-      body: `La tabla actual tiene ${leaderboard.entries.length} participante(s) y puede regenerarse por completo desde JSON y scripts.`
-    }
-  ];
-
-  if (!matches.length) {
-    notes.push({
-      title: "Carga inicial",
-      body: "Aun no hay calendario suficiente. El siguiente paso es completar matches.json con el torneo real."
-    });
-  }
-
-  const container = document.querySelector("#system-notes");
+/* === PICK EDITOR === */
+function renderPickEditor(matches) {
+  const container = document.getElementById("pick-editor");
   container.innerHTML = "";
 
-  for (const note of notes) {
-    const card = document.createElement("article");
-    card.className = "note-card";
-    card.innerHTML = `<h3>${note.title}</h3><p>${note.body}</p>`;
-    container.appendChild(card);
+  const groupMatches = matches.filter(m => m.stage === "group");
+  if (!groupMatches.length) {
+    container.innerHTML = `<div class="empty-state">No hay partidos disponibles</div>`;
+    return;
   }
+
+  // Group by group letter
+  const groups = {};
+  for (const m of groupMatches) {
+    const g = m.group || "?";
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(m);
+  }
+
+  for (const [g, items] of Object.entries(groups)) {
+    const section = document.createElement("div");
+    section.className = "pick-section";
+    section.innerHTML = `<div class="pick-section-title">Grupo ${g}</div>`;
+
+    for (const m of items) {
+      const locked = Date.parse(m.lockUtc) <= Date.now();
+      const row = document.createElement("div");
+      row.className = `pick-row ${locked ? "locked" : ""}`;
+      row.innerHTML = `
+        <div class="pick-match-info">
+          <p class="pick-match-title">${flag(m.homeTeam)} ${m.homeTeam} vs ${m.awayTeam} ${flag(m.awayTeam)}</p>
+          <p class="pick-match-meta">${fmtDate(m.kickoffUtc)}</p>
+        </div>
+        <div class="pick-inputs">
+          <input class="pick-input" type="number" min="0" max="20" inputmode="numeric"
+            data-match="${m.id}" data-side="home" ${locked ? "disabled" : ""} aria-label="Goles ${m.homeTeam}" />
+          <span class="pick-sep">-</span>
+          <input class="pick-input" type="number" min="0" max="20" inputmode="numeric"
+            data-match="${m.id}" data-side="away" ${locked ? "disabled" : ""} aria-label="Goles ${m.awayTeam}" />
+        </div>
+        ${locked ? '<span class="pick-lock-note">🔒</span>' : ""}
+      `;
+      section.appendChild(row);
+    }
+    container.appendChild(section);
+  }
+
+  // Listen for changes to update summary
+  container.addEventListener("input", () => updatePickSummary(groupMatches));
 }
 
-function buildDraftFromForm(matches) {
-  const userIdNode = document.querySelector("#user-id");
-  const displayNameNode = document.querySelector("#display-name");
-  const fallbackId = slugify(displayNameNode.value) || slugify(userIdNode.value) || "participante";
-  const picks = matches.map((match) => {
-    const homeNode = document.querySelector(`[data-match-id="${match.id}"][data-side="home"]`);
-    const awayNode = document.querySelector(`[data-match-id="${match.id}"][data-side="away"]`);
-    const homeScore = homeNode.value === "" ? null : Number(homeNode.value);
-    const awayScore = awayNode.value === "" ? null : Number(awayNode.value);
+function updatePickSummary(matches) {
+  const filled = matches.filter(m => {
+    const h = document.querySelector(`[data-match="${m.id}"][data-side="home"]`);
+    const a = document.querySelector(`[data-match="${m.id}"][data-side="away"]`);
+    return h && a && h.value !== "" && a.value !== "";
+  }).length;
+  document.getElementById("pick-summary").innerHTML =
+    `<strong>${filled}</strong> de <strong>${matches.length}</strong> picks capturados`;
+}
 
+function collectPicks(matches) {
+  const groupMatches = matches.filter(m => m.stage === "group");
+  return groupMatches.map(m => {
+    const h = document.querySelector(`[data-match="${m.id}"][data-side="home"]`);
+    const a = document.querySelector(`[data-match="${m.id}"][data-side="away"]`);
     return {
-      matchId: match.id,
-      homeScore,
-      awayScore
+      matchId: m.id,
+      homeScore: h && h.value !== "" ? Number(h.value) : null,
+      awayScore: a && a.value !== "" ? Number(a.value) : null
     };
   });
+}
 
+function buildPickPayload(matches) {
+  const email = currentUser?.email || "anon";
+  const name = currentUser?.user_metadata?.full_name || email.split("@")[0];
   return {
-    userId: normalizeText(userIdNode.value) || fallbackId,
-    displayName: normalizeText(displayNameNode.value) || "Participante local",
+    userId: slugify(name) || slugify(email),
+    displayName: name,
+    email: email,
     submittedAtUtc: new Date().toISOString(),
-    picks
+    picks: collectPicks(matches)
   };
 }
 
-function applyDraftToForm(matches, draft) {
-  if (!draft) {
-    return;
-  }
+function setStatus(msg, isError) {
+  const el = document.getElementById("form-status");
+  el.textContent = msg;
+  el.className = isError ? "form-status error" : "form-status";
+}
 
-  document.querySelector("#user-id").value = draft.userId || "";
-  document.querySelector("#display-name").value = draft.displayName || "";
+/* === SAVE PICKS (Netlify Function) === */
+async function savePicks(matches) {
+  const payload = buildPickPayload(matches);
+  // Save locally as backup
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 
-  const pickMap = new Map((draft.picks || []).map((pick) => [pick.matchId, pick]));
+  try {
+    const token = currentUser?.token?.access_token;
+    const res = await fetch("/.netlify/functions/save-picks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload)
+    });
 
-  for (const match of matches) {
-    const pick = pickMap.get(match.id);
-    if (!pick) {
-      continue;
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err || `Error ${res.status}`);
     }
-    const homeNode = document.querySelector(`[data-match-id="${match.id}"][data-side="home"]`);
-    const awayNode = document.querySelector(`[data-match-id="${match.id}"][data-side="away"]`);
-    homeNode.value = Number.isFinite(pick.homeScore) ? pick.homeScore : "";
-    awayNode.value = Number.isFinite(pick.awayScore) ? pick.awayScore : "";
+
+    setStatus("✅ Picks guardados correctamente");
+  } catch (err) {
+    console.error("Error guardando picks:", err);
+    setStatus("⚠️ Guardado local OK. Error al enviar al servidor: " + err.message, true);
   }
 }
 
-function getFilledPickCount(matches) {
-  return matches.filter((match) => {
-    const homeNode = document.querySelector(`[data-match-id="${match.id}"][data-side="home"]`);
-    const awayNode = document.querySelector(`[data-match-id="${match.id}"][data-side="away"]`);
-    return homeNode.value !== "" && awayNode.value !== "";
-  }).length;
+function loadDraft(matches) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    const pickMap = new Map((draft.picks || []).map(p => [p.matchId, p]));
+    for (const m of matches) {
+      const p = pickMap.get(m.id);
+      if (!p) continue;
+      const h = document.querySelector(`[data-match="${m.id}"][data-side="home"]`);
+      const a = document.querySelector(`[data-match="${m.id}"][data-side="away"]`);
+      if (h && p.homeScore !== null) h.value = p.homeScore;
+      if (a && p.awayScore !== null) a.value = p.awayScore;
+    }
+  } catch (e) { console.warn("No se pudo cargar borrador", e); }
 }
 
-function updateEditorSummary(matches) {
-  const filled = getFilledPickCount(matches);
-  document.querySelector("#editor-summary").textContent = `${filled} de ${matches.length} picks capturados`;
-}
-
-function setFormStatus(message) {
-  document.querySelector("#form-status").textContent = message;
-}
-
-function downloadJson(filename, payload) {
-  const blob = new Blob([JSON.stringify(payload, null, 2) + "\n"], {
-    type: "application/json"
-  });
+function downloadJson(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2) + "\n"], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
   URL.revokeObjectURL(url);
 }
 
-function renderPickEditor(matches) {
-  const container = document.querySelector("#pick-editor");
-  const template = document.querySelector("#pick-row-template");
+/* === MERGE DATA === */
+function mergeData(matches, results, overrides) {
+  const baseMap = new Map(results.map(r => [r.matchId, r]));
+  const overMap = new Map((overrides.results || []).map(r => [r.matchId, r]));
 
-  if (!matches.length) {
-    renderEmpty(container, "No hay partidos disponibles para capturar picks.");
-    return;
-  }
-
-  container.innerHTML = "";
-
-  for (const match of matches) {
-    const fragment = template.content.cloneNode(true);
-    const row = fragment.querySelector(".pick-row");
-    const locked = Date.parse(match.lockUtc) <= Date.now();
-    fragment.querySelector(".pick-match-title").textContent = `${match.homeTeam} vs ${match.awayTeam}`;
-    fragment.querySelector(".pick-match-meta").textContent = `${formatStage(match)} · ${formatDate(match.kickoffUtc)}`;
-    fragment.querySelector(".pick-lock-note").textContent = locked
-      ? `Cerrado desde ${formatDate(match.lockUtc)}`
-      : `Cierra ${formatDate(match.lockUtc)}`;
-
-    const homeInput = fragment.querySelector(".pick-home-score");
-    const awayInput = fragment.querySelector(".pick-away-score");
-    homeInput.dataset.matchId = match.id;
-    homeInput.dataset.side = "home";
-    awayInput.dataset.matchId = match.id;
-    awayInput.dataset.side = "away";
-    homeInput.disabled = locked;
-    awayInput.disabled = locked;
-
-    if (locked) {
-      row.classList.add("locked");
-    }
-
-    container.appendChild(fragment);
-  }
-
-  container.addEventListener("input", () => updateEditorSummary(matches), { passive: true });
-}
-
-function attachEditorActions(matches) {
-  document.querySelector("#save-draft").addEventListener("click", () => {
-    const draft = buildDraftFromForm(matches);
-    saveStoredDraft(draft);
-    updateEditorSummary(matches);
-    setFormStatus("Borrador guardado en localStorage.");
-  });
-
-  document.querySelector("#export-picks").addEventListener("click", () => {
-    const draft = buildDraftFromForm(matches);
-    saveStoredDraft(draft);
-    updateEditorSummary(matches);
-    const safeUserId = slugify(draft.userId) || "participante";
-    downloadJson(`pick-${safeUserId}.json`, draft);
-    setFormStatus("JSON exportado. Ese archivo se puede importar despues al repo.");
-  });
-
-  document.querySelector("#clear-draft").addEventListener("click", () => {
-    clearStoredDraft();
-    document.querySelector("#pick-form").reset();
-    document.querySelectorAll(".pick-home-score, .pick-away-score").forEach((node) => {
-      if (!node.disabled) {
-        node.value = "";
-      }
-    });
-    updateEditorSummary(matches);
-    setFormStatus("Borrador local eliminado.");
+  return matches.map(m => {
+    const r = overMap.get(m.id) || baseMap.get(m.id) || {};
+    return { ...m, result: r, displayStatus: r.status || m.status || "scheduled" };
   });
 }
 
+/* === BOOT === */
 async function boot() {
   try {
     const [matchesData, resultsData, leaderboardData, overridesData] = await Promise.all([
-      readJson(DATA_FILES.matches),
-      readJson(DATA_FILES.results),
-      readJson(DATA_FILES.leaderboard),
-      readJson(DATA_FILES.overrides)
+      fetchJson(DATA.matches), fetchJson(DATA.results),
+      fetchJson(DATA.leaderboard), fetchJson(DATA.overrides)
     ]);
 
-    const mergedMatches = mergeMatchesWithResults(
-      matchesData.matches || [],
-      resultsData.results || [],
-      overridesData
+    allMatches = mergeData(
+      matchesData.matches || [], resultsData.results || [], overridesData
     );
 
-    const latestResultUpdate = (resultsData.results || []).reduce((latest, item) => {
-      if (!item.updatedAtUtc) {
-        return latest;
-      }
-      if (!latest || Date.parse(item.updatedAtUtc) > Date.parse(latest)) {
-        return item.updatedAtUtc;
-      }
-      return latest;
-    }, null);
+    document.getElementById("tournament-name").textContent =
+      matchesData.tournament?.name || "Quiniela Mundial 2026";
 
-    document.querySelector("#tournament-name").textContent =
-      matchesData.tournament?.name || "Quiniela Mundial";
-    document.querySelector("#tournament-timezone").textContent =
-      `TZ base: ${matchesData.tournament?.timezone || "UTC"}`;
+    renderStats(allMatches, leaderboardData);
+    renderMatches(allMatches);
+    renderLeaderboard(leaderboardData.entries || [], leaderboardData.generatedAtUtc);
+    renderPickEditor(allMatches);
+    loadDraft(allMatches);
+    updatePickSummary(allMatches.filter(m => m.stage === "group"));
 
-    renderStats(mergedMatches, leaderboardData, latestResultUpdate);
-    renderMatches(mergedMatches);
-    renderLeaderboard(
-      leaderboardData.entries || [],
-      leaderboardData.generatedAtUtc || latestResultUpdate
-    );
-    renderPickEditor(mergedMatches);
-    applyDraftToForm(mergedMatches, getStoredDraft());
-    updateEditorSummary(mergedMatches);
-    attachEditorActions(mergedMatches);
-    renderNotes({
-      matches: mergedMatches,
-      leaderboard: leaderboardData,
-      overrides: overridesData
+    // Wire up buttons
+    document.getElementById("btn-save-picks").addEventListener("click", () => savePicks(allMatches));
+    document.getElementById("btn-export-picks").addEventListener("click", () => {
+      const payload = buildPickPayload(allMatches);
+      downloadJson(`pick-${payload.userId}.json`, payload);
+      setStatus("📤 JSON exportado");
     });
-  } catch (error) {
-    document.querySelector(".shell").innerHTML = `
-      <section class="panel">
-        <p class="section-kicker">Error</p>
-        <h2>No se pudo cargar la quiniela</h2>
-        <p class="hero-copy">${error.message}</p>
-      </section>
+    document.getElementById("btn-clear-picks").addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEY);
+      document.querySelectorAll(".pick-input").forEach(el => { if (!el.disabled) el.value = ""; });
+      updatePickSummary(allMatches.filter(m => m.stage === "group"));
+      setStatus("🗑️ Borrador limpiado");
+    });
+
+  } catch (err) {
+    document.getElementById("app-main").innerHTML = `
+      <div class="empty-state">
+        <p>⚠️ Error cargando datos</p>
+        <p>${err.message}</p>
+      </div>
     `;
-    console.error(error);
+    console.error(err);
   }
 }
 
-boot();
+/* === INIT === */
+initTabs();
+initAuth();
