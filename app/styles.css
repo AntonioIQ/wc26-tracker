@@ -41,6 +41,8 @@ body {
 .auth-screen h1 { font-size: 2rem; }
 .auth-screen .auth-subtitle { color: var(--wc-muted); font-size: 1.1rem; }
 .auth-screen .wc-logo { font-size: 3.5rem; margin-bottom: 0.5rem; }
+.wc-logo-img { width: 120px; height: auto; margin-bottom: 0.5rem; }
+.hero-logo-img { width: 80px; }
 .auth-btn {
   background: var(--wc-blue);
   color: #fff;
