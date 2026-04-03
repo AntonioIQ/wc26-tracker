@@ -1,454 +1,263 @@
-/* === Quiniela Mundial 2026 — App === */
+const DATA = { matches:"./data/matches.json", results:"./data/results.json", leaderboard:"./data/leaderboard.json", overrides:"./data/overrides.json", venues:"./data/venues.json" };
+const FLAGS={"Mexico":"🇲🇽","South Africa":"🇿🇦","South Korea":"🇰🇷","Czechia":"🇨🇿","Canada":"🇨🇦","Bosnia and Herzegovina":"🇧🇦","Qatar":"🇶🇦","Switzerland":"🇨🇭","United States":"🇺🇸","Paraguay":"🇵🇾","Australia":"🇦🇺","Turkey":"🇹🇷","Brazil":"🇧🇷","Morocco":"🇲🇦","Haiti":"🇭🇹","Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Germany":"🇩🇪","Curacao":"🇨🇼","Netherlands":"🇳🇱","Japan":"🇯🇵","Ivory Coast":"🇨🇮","Ecuador":"🇪🇨","Sweden":"🇸🇪","Tunisia":"🇹🇳","Spain":"🇪🇸","Cape Verde":"🇨🇻","Belgium":"🇧🇪","Egypt":"🇪🇬","Saudi Arabia":"🇸🇦","Uruguay":"🇺🇾","Iran":"🇮🇷","New Zealand":"🇳🇿","France":"🇫🇷","Senegal":"🇸🇳","Iraq":"🇮🇶","Norway":"🇳🇴","Argentina":"🇦🇷","Algeria":"🇩🇿","Austria":"🇦🇹","Jordan":"🇯🇴","Portugal":"🇵🇹","DR Congo":"🇨🇩","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croatia":"🇭🇷","Ghana":"🇬🇭","Panama":"🇵🇦","Uzbekistan":"🇺🇿","Colombia":"🇨🇴"};
+const STAGES={"group":"Fase de Grupos","round-of-32":"Treintaidosavos","round-of-16":"Octavos","quarterfinal":"Cuartos","semifinal":"Semifinal","third-place":"3er Lugar","final":"Final"};
+const STAGE_BADGE={"group":"badge-group","round-of-32":"badge-r32","round-of-16":"badge-r16","quarterfinal":"badge-qf","semifinal":"badge-sf","third-place":"badge-final","final":"badge-final"};
+const STORAGE_KEY="quiniela-wc26-draft";
+let currentUser=null, allMatches=[], venuesData=[];
 
-const DATA = {
-  matches: "./data/matches.json",
-  results: "./data/results.json",
-  leaderboard: "./data/leaderboard.json",
-  overrides: "./data/overrides.json"
-};
+async function fetchJson(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw new Error(`Error ${u}`);return r.json()}
+function fl(t){return FLAGS[t]||"🏳️"}
+function fmtDate(u){if(!u)return"—";return new Intl.DateTimeFormat("es-MX",{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:true}).format(new Date(u))}
+function fmtDay(u){if(!u)return"—";return new Intl.DateTimeFormat("es-MX",{weekday:"long",day:"numeric",month:"long"}).format(new Date(u))}
+function fmtScore(s){return s!==null&&s!==undefined?String(s):"-"}
+function slugify(v){return String(v||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"")}
 
-const FLAGS = {
-  "Mexico": "🇲🇽", "South Africa": "🇿🇦", "South Korea": "🇰🇷", "Czechia": "🇨🇿",
-  "Canada": "🇨🇦", "Bosnia and Herzegovina": "🇧🇦", "Qatar": "🇶🇦", "Switzerland": "🇨🇭",
-  "United States": "🇺🇸", "Paraguay": "🇵🇾", "Australia": "🇦🇺", "Turkey": "🇹🇷",
-  "Brazil": "🇧🇷", "Morocco": "🇲🇦", "Haiti": "🇭🇹", "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-  "Germany": "🇩🇪", "Curacao": "🇨🇼", "Netherlands": "🇳🇱", "Japan": "🇯🇵",
-  "Ivory Coast": "🇨🇮", "Ecuador": "🇪🇨", "Sweden": "🇸🇪", "Tunisia": "🇹🇳",
-  "Spain": "🇪🇸", "Cape Verde": "🇨🇻", "Belgium": "🇧🇪", "Egypt": "🇪🇬",
-  "Saudi Arabia": "🇸🇦", "Uruguay": "🇺🇾", "Iran": "🇮🇷", "New Zealand": "🇳🇿",
-  "France": "🇫🇷", "Senegal": "🇸🇳", "Iraq": "🇮🇶", "Norway": "🇳🇴",
-  "Argentina": "🇦🇷", "Algeria": "🇩🇿", "Austria": "🇦🇹", "Jordan": "🇯🇴",
-  "Portugal": "🇵🇹", "DR Congo": "🇨🇩", "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Croatia": "🇭🇷",
-  "Ghana": "🇬🇭", "Panama": "🇵🇦", "Uzbekistan": "🇺🇿", "Colombia": "🇨🇴"
-};
+/* AUTH */
+function initAuth(){
+  document.getElementById("btn-login").addEventListener("click",()=>netlifyIdentity.open("login"));
+  document.getElementById("btn-logout").addEventListener("click",()=>netlifyIdentity.logout());
+  netlifyIdentity.on("login",u=>{currentUser=u;showApp();netlifyIdentity.close()});
+  netlifyIdentity.on("logout",()=>{currentUser=null;showAuth()});
+  const u=netlifyIdentity.currentUser();
+  if(u){currentUser=u;showApp()}else{showAuth()}
+}
+function showAuth(){document.getElementById("auth-screen").style.display="";document.getElementById("app-main").style.display="none"}
+function showApp(){document.getElementById("auth-screen").style.display="none";document.getElementById("app-main").style.display="";document.getElementById("user-display").textContent="👤 "+(currentUser?.user_metadata?.full_name||currentUser?.email||"Jugador");boot()}
 
-const STAGE_LABELS = {
-  "group": "Fase de Grupos", "round-of-32": "Treintaidosavos",
-  "round-of-16": "Octavos de Final", "quarterfinal": "Cuartos de Final",
-  "semifinal": "Semifinal", "third-place": "Tercer Lugar", "final": "Final"
-};
-
-const STAGE_BADGE = {
-  "group": "badge-group", "round-of-32": "badge-r32",
-  "round-of-16": "badge-r16", "quarterfinal": "badge-qf",
-  "semifinal": "badge-sf", "third-place": "badge-final", "final": "badge-final"
-};
-
-const STORAGE_KEY = "quiniela-wc26-draft";
-let currentUser = null;
-let allMatches = [];
-
-/* === UTILS === */
-async function fetchJson(url) {
-  const r = await fetch(url, { cache: "no-store" });
-  if (!r.ok) throw new Error(`Error cargando ${url}`);
-  return r.json();
+/* TABS */
+function initTabs(){
+  const tabs=document.querySelectorAll(".nav-tab");
+  tabs.forEach(t=>t.addEventListener("click",()=>{
+    tabs.forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    t.classList.add("active");
+    document.getElementById(t.dataset.tab).classList.add("active");
+    if(t.dataset.tab==="tab-venues")setTimeout(()=>initMap(),100);
+  }));
 }
 
-function flag(team) { return FLAGS[team] || "🏳️"; }
-
-function fmtDate(utc) {
-  if (!utc) return "—";
-  return new Intl.DateTimeFormat("es-MX", {
-    weekday: "short", month: "short", day: "numeric",
-    hour: "2-digit", minute: "2-digit", hour12: true
-  }).format(new Date(utc));
+/* STATS */
+function renderStats(matches,lb){
+  const now=Date.now();
+  const locked=matches.filter(m=>Date.parse(m.lockUtc)<=now).length;
+  const finished=matches.filter(m=>m.displayStatus==="finished").length;
+  const live=matches.filter(m=>m.displayStatus==="live").length;
+  const items=[
+    {v:matches.length,l:"Partidos"},{v:finished,l:"Jugados"},{v:live||"—",l:"En Vivo"},
+    {v:locked,l:"Cerrados"},{v:lb.entries?.length||0,l:"Jugadores"}
+  ];
+  document.getElementById("stats-grid").innerHTML=items.map(i=>`<article class="stat-card"><p class="stat-value">${i.v}</p><p class="stat-label">${i.l}</p></article>`).join("");
 }
 
-function fmtScore(s) { return s !== null && s !== undefined ? String(s) : "-"; }
+/* GROUPS */
+function renderGroups(matches){
+  const container=document.getElementById("tab-groups");
+  const groupMatches=matches.filter(m=>m.stage==="group");
+  const groups={};
+  groupMatches.forEach(m=>{const g=m.group||"?";if(!groups[g])groups[g]=[];groups[g].push(m)});
 
-function slugify(v) {
-  return String(v || "").trim().toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
-
-/* === AUTH (Netlify Identity) === */
-function initAuth() {
-  const loginBtn = document.getElementById("btn-login");
-  const logoutBtn = document.getElementById("btn-logout");
-
-  loginBtn.addEventListener("click", () => {
-    netlifyIdentity.open("login");
-  });
-
-  logoutBtn.addEventListener("click", () => {
-    netlifyIdentity.logout();
-  });
-
-  netlifyIdentity.on("login", (user) => {
-    currentUser = user;
-    showApp();
-    netlifyIdentity.close();
-  });
-
-  netlifyIdentity.on("logout", () => {
-    currentUser = null;
-    showAuth();
-  });
-
-  // Check if already logged in
-  const user = netlifyIdentity.currentUser();
-  if (user) {
-    currentUser = user;
-    showApp();
-  } else {
-    showAuth();
-  }
-}
-
-function showAuth() {
-  document.getElementById("auth-screen").style.display = "";
-  document.getElementById("app-main").style.display = "none";
-}
-
-function showApp() {
-  document.getElementById("auth-screen").style.display = "none";
-  document.getElementById("app-main").style.display = "";
-  const name = currentUser?.user_metadata?.full_name || currentUser?.email || "Jugador";
-  document.getElementById("user-display").textContent = `👤 ${name}`;
-  boot();
-}
-
-/* === TABS === */
-function initTabs() {
-  const tabs = document.querySelectorAll(".nav-tab");
-  tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-      tabs.forEach(t => t.classList.remove("active"));
-      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-      tab.classList.add("active");
-      document.getElementById(tab.dataset.tab).classList.add("active");
+  let html='<div class="groups-grid">';
+  for(const[g,items]of Object.entries(groups).sort(([a],[b])=>a.localeCompare(b))){
+    const teams=buildStandings(items);
+    html+=`<div class="group-card">
+      <div class="group-card-header"><span>Grupo ${g}</span><span style="font-size:0.75rem">${teams.map(t=>fl(t.name)).join(" ")}</span></div>
+      <table class="group-standings"><thead><tr><th></th><th></th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th class="pts">Pts</th></tr></thead><tbody>`;
+    teams.forEach((t,i)=>{
+      const cls=i<2?"qualify":"";
+      html+=`<tr class="${cls}"><td class="pos">${i+1}</td><td class="team-cell"><span class="flag">${fl(t.name)}</span>${t.name}</td><td>${t.pj}</td><td>${t.g}</td><td>${t.e}</td><td>${t.p}</td><td>${t.gf}</td><td>${t.gc}</td><td class="pts">${t.pts}</td></tr>`;
     });
+    html+=`</tbody></table><div class="group-matches">`;
+    items.forEach(m=>{
+      html+=`<div class="group-match"><span class="gm-home">${fl(m.homeTeam)} ${m.homeTeam}</span><span class="gm-score">${fmtScore(m.result?.homeScore)} - ${fmtScore(m.result?.awayScore)}</span><span class="gm-away">${m.awayTeam} ${fl(m.awayTeam)}</span></div>`;
+    });
+    html+=`</div></div>`;
+  }
+  html+="</div>";
+  container.innerHTML=html;
+}
+
+function buildStandings(matches){
+  const t={};
+  matches.forEach(m=>{
+    [m.homeTeam,m.awayTeam].forEach(n=>{if(!t[n])t[n]={name:n,pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}});
+    if(m.result?.homeScore===null||m.result?.homeScore===undefined)return;
+    const h=m.result.homeScore,a=m.result.awayScore;
+    t[m.homeTeam].pj++;t[m.awayTeam].pj++;
+    t[m.homeTeam].gf+=h;t[m.homeTeam].gc+=a;
+    t[m.awayTeam].gf+=a;t[m.awayTeam].gc+=h;
+    if(h>a){t[m.homeTeam].g++;t[m.homeTeam].pts+=3;t[m.awayTeam].p++}
+    else if(h<a){t[m.awayTeam].g++;t[m.awayTeam].pts+=3;t[m.homeTeam].p++}
+    else{t[m.homeTeam].e++;t[m.homeTeam].pts++;t[m.awayTeam].e++;t[m.awayTeam].pts++}
+  });
+  return Object.values(t).sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
+}
+
+/* CALENDAR */
+function renderCalendar(matches){
+  const byDay={};
+  matches.forEach(m=>{const d=m.kickoffUtc?m.kickoffUtc.slice(0,10):"tbd";if(!byDay[d])byDay[d]=[];byDay[d].push(m)});
+  const days=Object.keys(byDay).sort();
+  const filters=document.getElementById("calendar-filters");
+  const list=document.getElementById("calendar-list");
+  filters.innerHTML=`<button class="cal-btn active" data-day="all">Todos</button>`+days.map(d=>`<button class="cal-btn" data-day="${d}">${fmtDay(d+"T12:00:00Z")}</button>`).join("");
+  function show(day){
+    const filtered=day==="all"?days:days.filter(d=>d===day);
+    list.innerHTML=filtered.map(d=>`<div class="cal-day-header">📅 ${fmtDay(d+"T12:00:00Z")}</div>`+byDay[d].map(m=>matchCardHTML(m)).join("")).join("");
+  }
+  show("all");
+  filters.addEventListener("click",e=>{
+    if(!e.target.classList.contains("cal-btn"))return;
+    filters.querySelectorAll(".cal-btn").forEach(b=>b.classList.remove("active"));
+    e.target.classList.add("active");
+    show(e.target.dataset.day);
   });
 }
 
-/* === RENDER MATCHES === */
-function renderMatches(matches) {
-  const container = document.getElementById("matches-container");
-  container.innerHTML = "";
-
-  // Group by stage
-  const stages = {};
-  for (const m of matches) {
-    const key = m.stage === "group" ? `group-${m.group}` : m.stage;
-    if (!stages[key]) stages[key] = [];
-    stages[key].push(m);
-  }
-
-  for (const [key, items] of Object.entries(stages)) {
-    const section = document.createElement("div");
-    section.className = "group-section";
-
-    const isGroup = key.startsWith("group-");
-    const groupLetter = isGroup ? key.split("-")[1] : null;
-    const label = isGroup ? `Grupo ${groupLetter}` : (STAGE_LABELS[key] || key);
-    const teams = isGroup
-      ? [...new Set(items.flatMap(m => [m.homeTeam, m.awayTeam]))]
-          .map(t => `${flag(t)} ${t}`).join(" · ")
-      : "";
-
-    section.innerHTML = `
-      <div class="group-header">
-        <h3>${label}</h3>
-        <span class="group-teams">${teams}</span>
-      </div>
-    `;
-
-    for (const m of items) {
-      section.appendChild(createMatchCard(m));
-    }
-    container.appendChild(section);
-  }
-}
-
-function createMatchCard(m) {
-  const card = document.createElement("article");
-  const statusClass = m.displayStatus === "live" ? "is-live" : m.displayStatus === "finished" ? "is-finished" : "";
-  card.className = `match-card ${statusClass}`;
-
-  const badgeClass = m.stage === "group" ? "badge-group" : (STAGE_BADGE[m.stage] || "badge-scheduled");
-  const stageLabel = m.stage === "group" ? `Grupo ${m.group}` : (STAGE_LABELS[m.stage] || m.stage);
-  const statusBadge = m.displayStatus === "live" ? "badge-live"
-    : m.displayStatus === "finished" ? "badge-finished" : "badge-scheduled";
-  const statusLabel = m.displayStatus === "live" ? "EN VIVO"
-    : m.displayStatus === "finished" ? "FINAL" : "PROG";
-
-  card.innerHTML = `
-    <div class="match-topline">
-      <span class="badge ${badgeClass}">${stageLabel}</span>
-      <span class="badge ${statusBadge}">${statusLabel}</span>
-      <span class="match-date">${fmtDate(m.kickoffUtc)}</span>
-    </div>
+function matchCardHTML(m){
+  const stageLabel=m.stage==="group"?`Grupo ${m.group}`:(STAGES[m.stage]||m.stage);
+  const badgeCls=STAGE_BADGE[m.stage]||"badge-scheduled";
+  const statusCls=m.displayStatus==="live"?"badge-live":m.displayStatus==="finished"?"badge-finished":"badge-scheduled";
+  const statusTxt=m.displayStatus==="live"?"EN VIVO":m.displayStatus==="finished"?"FINAL":"PROG";
+  const liveCls=m.displayStatus==="live"?" is-live":"";
+  return `<article class="match-card${liveCls}">
+    <div class="match-topline"><span class="badge ${badgeCls}">${stageLabel}</span><span class="badge ${statusCls}">${statusTxt}</span><span class="match-date">${fmtDate(m.kickoffUtc)}</span></div>
     <div class="teams-row">
-      <div class="team-block home">
-        <span class="team-flag">${flag(m.homeTeam)}</span>
-        <span class="team-name">${m.homeTeam}</span>
-      </div>
-      <div class="score-display">
-        <span>${fmtScore(m.result?.homeScore)}</span>
-        <span class="sep">-</span>
-        <span>${fmtScore(m.result?.awayScore)}</span>
-      </div>
-      <div class="team-block away">
-        <span class="team-flag">${flag(m.awayTeam)}</span>
-        <span class="team-name">${m.awayTeam}</span>
-      </div>
+      <div class="team-block home"><span class="team-flag">${fl(m.homeTeam)}</span><span class="team-name">${m.homeTeam}</span></div>
+      <div class="score-display"><span>${fmtScore(m.result?.homeScore)}</span><span class="sep">-</span><span>${fmtScore(m.result?.awayScore)}</span></div>
+      <div class="team-block away"><span class="team-flag">${fl(m.awayTeam)}</span><span class="team-name">${m.awayTeam}</span></div>
     </div>
-    <p class="match-venue">${m.venue || "Sede por confirmar"}</p>
-  `;
-  return card;
+    <p class="match-venue-line">${m.venue||"Sede por confirmar"}</p>
+  </article>`;
 }
 
-/* === RENDER LEADERBOARD === */
-function renderLeaderboard(entries, generatedAt) {
-  const body = document.getElementById("leaderboard-body");
-  body.innerHTML = "";
-
-  if (!entries.length) {
-    body.innerHTML = `<tr><td colspan="3" class="empty-state">Sin participantes aún</td></tr>`;
-    return;
-  }
-
-  entries.forEach((e, i) => {
-    const rankClass = i < 3 ? `rank-${i + 1}` : "";
-    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="rank-cell ${rankClass}">${medal}</td>
-      <td>
-        <span>${e.displayName}</span>
-        <span class="player-id-cell"> · ${e.userId}</span>
-      </td>
-      <td class="points-cell">${e.totalPoints}</td>
-    `;
-    body.appendChild(tr);
-  });
-
-  document.getElementById("leaderboard-updated").textContent =
-    generatedAt ? `Actualizado: ${fmtDate(generatedAt)}` : "";
+/* BRACKET */
+function renderBracket(matches){
+  const container=document.getElementById("bracket-container");
+  const rounds=[
+    {key:"round-of-32",label:"🏟️ Treintaidosavos de Final"},
+    {key:"round-of-16",label:"⚔️ Octavos de Final"},
+    {key:"quarterfinal",label:"🔥 Cuartos de Final"},
+    {key:"semifinal",label:"⭐ Semifinales"},
+    {key:"third-place",label:"🥉 Tercer Lugar"},
+    {key:"final",label:"🏆 FINAL"}
+  ];
+  container.innerHTML=rounds.map(r=>{
+    const rm=matches.filter(m=>m.stage===r.key);
+    if(!rm.length)return"";
+    return `<div class="bracket-round"><div class="bracket-round-title">${r.label}</div><div class="bracket-matches">${rm.map(m=>{
+      const hw=m.result?.winner==="home",aw=m.result?.winner==="away";
+      return `<div class="bracket-match"><div class="bm-teams">
+        <div class="bm-team ${hw?"winner":""}"><span>${fl(m.homeTeam)} ${m.homeTeam}</span><span class="bm-score">${fmtScore(m.result?.homeScore)}</span></div>
+        <div class="bm-team ${aw?"winner":""}"><span>${fl(m.awayTeam)} ${m.awayTeam}</span><span class="bm-score">${fmtScore(m.result?.awayScore)}</span></div>
+      </div><div class="bm-meta">${fmtDate(m.kickoffUtc)} · ${m.venue||""}</div></div>`;
+    }).join("")}</div></div>`;
+  }).join("");
 }
 
-/* === RENDER STATS === */
-function renderStats(matches, leaderboard) {
-  const now = Date.now();
-  const locked = matches.filter(m => Date.parse(m.lockUtc) <= now).length;
-  const finished = matches.filter(m => m.displayStatus === "finished").length;
-
-  document.getElementById("stat-matches").textContent = matches.length;
-  document.getElementById("stat-locked").textContent = locked;
-  document.getElementById("stat-players").textContent = leaderboard.entries?.length || 0;
-  document.getElementById("stat-finished").textContent = finished;
-}
-
-/* === PICK EDITOR === */
-function renderPickEditor(matches) {
-  const container = document.getElementById("pick-editor");
-  container.innerHTML = "";
-
-  const groupMatches = matches.filter(m => m.stage === "group");
-  if (!groupMatches.length) {
-    container.innerHTML = `<div class="empty-state">No hay partidos disponibles</div>`;
-    return;
-  }
-
-  // Group by group letter
-  const groups = {};
-  for (const m of groupMatches) {
-    const g = m.group || "?";
-    if (!groups[g]) groups[g] = [];
-    groups[g].push(m);
-  }
-
-  for (const [g, items] of Object.entries(groups)) {
-    const section = document.createElement("div");
-    section.className = "pick-section";
-    section.innerHTML = `<div class="pick-section-title">Grupo ${g}</div>`;
-
-    for (const m of items) {
-      const locked = Date.parse(m.lockUtc) <= Date.now();
-      const row = document.createElement("div");
-      row.className = `pick-row ${locked ? "locked" : ""}`;
-      row.innerHTML = `
-        <div class="pick-match-info">
-          <p class="pick-match-title">${flag(m.homeTeam)} ${m.homeTeam} vs ${m.awayTeam} ${flag(m.awayTeam)}</p>
-          <p class="pick-match-meta">${fmtDate(m.kickoffUtc)}</p>
-        </div>
-        <div class="pick-inputs">
-          <input class="pick-input" type="number" min="0" max="20" inputmode="numeric"
-            data-match="${m.id}" data-side="home" ${locked ? "disabled" : ""} aria-label="Goles ${m.homeTeam}" />
-          <span class="pick-sep">-</span>
-          <input class="pick-input" type="number" min="0" max="20" inputmode="numeric"
-            data-match="${m.id}" data-side="away" ${locked ? "disabled" : ""} aria-label="Goles ${m.awayTeam}" />
-        </div>
-        ${locked ? '<span class="pick-lock-note">🔒</span>' : ""}
-      `;
-      section.appendChild(row);
-    }
-    container.appendChild(section);
-  }
-
-  // Listen for changes to update summary
-  container.addEventListener("input", () => updatePickSummary(groupMatches));
-}
-
-function updatePickSummary(matches) {
-  const filled = matches.filter(m => {
-    const h = document.querySelector(`[data-match="${m.id}"][data-side="home"]`);
-    const a = document.querySelector(`[data-match="${m.id}"][data-side="away"]`);
-    return h && a && h.value !== "" && a.value !== "";
-  }).length;
-  document.getElementById("pick-summary").innerHTML =
-    `<strong>${filled}</strong> de <strong>${matches.length}</strong> picks capturados`;
-}
-
-function collectPicks(matches) {
-  const groupMatches = matches.filter(m => m.stage === "group");
-  return groupMatches.map(m => {
-    const h = document.querySelector(`[data-match="${m.id}"][data-side="home"]`);
-    const a = document.querySelector(`[data-match="${m.id}"][data-side="away"]`);
-    return {
-      matchId: m.id,
-      homeScore: h && h.value !== "" ? Number(h.value) : null,
-      awayScore: a && a.value !== "" ? Number(a.value) : null
-    };
+/* VENUES MAP */
+let mapInstance=null;
+function initMap(){
+  if(mapInstance||!venuesData.length)return;
+  mapInstance=L.map("venues-map").setView([35,-95],3);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(mapInstance);
+  venuesData.forEach(v=>{
+    L.marker([v.lat,v.lng]).addTo(mapInstance).bindPopup(`<b>${v.flag} ${v.name}</b><br>${v.city}<br>Capacidad: ${v.capacity.toLocaleString()}<br><small>${v.description}</small>`);
   });
 }
 
-function buildPickPayload(matches) {
-  const email = currentUser?.email || "anon";
-  const name = currentUser?.user_metadata?.full_name || email.split("@")[0];
-  return {
-    userId: slugify(name) || slugify(email),
-    displayName: name,
-    email: email,
-    submittedAtUtc: new Date().toISOString(),
-    picks: collectPicks(matches)
-  };
+function renderVenues(venues){
+  venuesData=venues;
+  document.getElementById("venues-list").innerHTML=venues.map(v=>`<div class="venue-card">
+    <h3>${v.flag} ${v.name}</h3>
+    <p class="venue-city">${v.city}, ${v.country}</p>
+    <p class="venue-cap">🏟️ Capacidad: ${v.capacity.toLocaleString()}</p>
+    <p class="venue-desc">${v.description}</p>
+  </div>`).join("");
 }
 
-function setStatus(msg, isError) {
-  const el = document.getElementById("form-status");
-  el.textContent = msg;
-  el.className = isError ? "form-status error" : "form-status";
+/* LEADERBOARD */
+function renderLeaderboard(entries,gen){
+  const body=document.getElementById("leaderboard-body");
+  if(!entries.length){body.innerHTML=`<tr><td colspan="3" class="empty-state">Sin participantes</td></tr>`;return}
+  body.innerHTML=entries.map((e,i)=>{
+    const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1;
+    return `<tr><td class="rank-cell">${medal}</td><td>${e.displayName}<span class="player-id-cell"> · ${e.userId}</span></td><td class="points-cell">${e.totalPoints}</td></tr>`;
+  }).join("");
+  document.getElementById("leaderboard-updated").textContent=gen?`Actualizado: ${fmtDate(gen)}`:"";
 }
 
-/* === SAVE PICKS (Netlify Function) === */
-async function savePicks(matches) {
-  const payload = buildPickPayload(matches);
-  // Save locally as backup
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-
-  try {
-    const token = currentUser?.token?.access_token;
-    const res = await fetch("/.netlify/functions/save-picks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { "Authorization": `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(err || `Error ${res.status}`);
-    }
-
-    setStatus("✅ Picks guardados correctamente");
-  } catch (err) {
-    console.error("Error guardando picks:", err);
-    setStatus("⚠️ Guardado local OK. Error al enviar al servidor: " + err.message, true);
-  }
+/* PICKS */
+function renderPickEditor(matches){
+  const container=document.getElementById("pick-editor");
+  const gm=matches.filter(m=>m.stage==="group");
+  if(!gm.length){container.innerHTML=`<div class="empty-state">No hay partidos</div>`;return}
+  const groups={};
+  gm.forEach(m=>{const g=m.group||"?";if(!groups[g])groups[g]=[];groups[g].push(m)});
+  container.innerHTML=Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([g,items])=>`<div class="pick-section"><div class="pick-section-title">Grupo ${g}</div>${items.map(m=>{
+    const locked=Date.parse(m.lockUtc)<=Date.now();
+    return `<div class="pick-row ${locked?"locked":""}"><div class="pick-match-info"><p class="pick-match-title">${fl(m.homeTeam)} ${m.homeTeam} vs ${m.awayTeam} ${fl(m.awayTeam)}</p><p class="pick-match-meta">${fmtDate(m.kickoffUtc)}</p></div><div class="pick-inputs"><input class="pick-input" type="number" min="0" max="20" inputmode="numeric" data-match="${m.id}" data-side="home" ${locked?"disabled":""} aria-label="Goles ${m.homeTeam}"><span class="pick-sep">-</span><input class="pick-input" type="number" min="0" max="20" inputmode="numeric" data-match="${m.id}" data-side="away" ${locked?"disabled":""} aria-label="Goles ${m.awayTeam}"></div>${locked?'<span class="pick-lock-note">🔒</span>':""}</div>`;
+  }).join("")}</div>`).join("");
+  container.addEventListener("input",()=>updatePickSummary(gm),{passive:true});
 }
 
-function loadDraft(matches) {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const draft = JSON.parse(raw);
-    const pickMap = new Map((draft.picks || []).map(p => [p.matchId, p]));
-    for (const m of matches) {
-      const p = pickMap.get(m.id);
-      if (!p) continue;
-      const h = document.querySelector(`[data-match="${m.id}"][data-side="home"]`);
-      const a = document.querySelector(`[data-match="${m.id}"][data-side="away"]`);
-      if (h && p.homeScore !== null) h.value = p.homeScore;
-      if (a && p.awayScore !== null) a.value = p.awayScore;
-    }
-  } catch (e) { console.warn("No se pudo cargar borrador", e); }
+function updatePickSummary(matches){
+  const filled=matches.filter(m=>{const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`);return h&&a&&h.value!==""&&a.value!==""}).length;
+  document.getElementById("pick-summary").innerHTML=`<strong>${filled}</strong> de <strong>${matches.length}</strong> picks capturados`;
 }
 
-function downloadJson(filename, data) {
-  const blob = new Blob([JSON.stringify(data, null, 2) + "\n"], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+function collectPicks(matches){
+  return matches.filter(m=>m.stage==="group").map(m=>{const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`);return{matchId:m.id,homeScore:h&&h.value!==""?Number(h.value):null,awayScore:a&&a.value!==""?Number(a.value):null}});
 }
 
-/* === MERGE DATA === */
-function mergeData(matches, results, overrides) {
-  const baseMap = new Map(results.map(r => [r.matchId, r]));
-  const overMap = new Map((overrides.results || []).map(r => [r.matchId, r]));
-
-  return matches.map(m => {
-    const r = overMap.get(m.id) || baseMap.get(m.id) || {};
-    return { ...m, result: r, displayStatus: r.status || m.status || "scheduled" };
-  });
+function buildPickPayload(matches){
+  const email=currentUser?.email||"anon",name=currentUser?.user_metadata?.full_name||email.split("@")[0];
+  return{userId:slugify(name)||slugify(email),displayName:name,email,submittedAtUtc:new Date().toISOString(),picks:collectPicks(matches)};
 }
 
-/* === BOOT === */
-async function boot() {
-  try {
-    const [matchesData, resultsData, leaderboardData, overridesData] = await Promise.all([
-      fetchJson(DATA.matches), fetchJson(DATA.results),
-      fetchJson(DATA.leaderboard), fetchJson(DATA.overrides)
-    ]);
+function setStatus(msg,err){const el=document.getElementById("form-status");el.textContent=msg;el.className=err?"form-status error":"form-status"}
 
-    allMatches = mergeData(
-      matchesData.matches || [], resultsData.results || [], overridesData
-    );
+async function savePicks(matches){
+  const payload=buildPickPayload(matches);
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
+  try{
+    const token=currentUser?.token?.access_token;
+    const res=await fetch("/.netlify/functions/save-picks",{method:"POST",headers:{"Content-Type":"application/json",...(token?{"Authorization":`Bearer ${token}`}:{})},body:JSON.stringify(payload)});
+    if(!res.ok)throw new Error(await res.text());
+    setStatus("✅ Picks guardados");
+  }catch(e){setStatus("⚠️ Local OK. Error servidor: "+e.message,true)}
+}
 
-    document.getElementById("tournament-name").textContent =
-      matchesData.tournament?.name || "Quiniela Mundial 2026";
+function loadDraft(matches){
+  try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;const d=JSON.parse(raw),pm=new Map((d.picks||[]).map(p=>[p.matchId,p]));
+  matches.forEach(m=>{const p=pm.get(m.id);if(!p)return;const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`);if(h&&p.homeScore!==null)h.value=p.homeScore;if(a&&p.awayScore!==null)a.value=p.awayScore})}catch(e){}}
 
-    renderStats(allMatches, leaderboardData);
-    renderMatches(allMatches);
-    renderLeaderboard(leaderboardData.entries || [], leaderboardData.generatedAtUtc);
+function downloadJson(fn,d){const b=new Blob([JSON.stringify(d,null,2)+"\n"],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u)}
+
+/* MERGE */
+function mergeData(matches,results,overrides){
+  const bm=new Map(results.map(r=>[r.matchId,r])),om=new Map((overrides.results||[]).map(r=>[r.matchId,r]));
+  return matches.map(m=>{const r=om.get(m.id)||bm.get(m.id)||{};return{...m,result:r,displayStatus:r.status||m.status||"scheduled"}});
+}
+
+/* BOOT */
+async function boot(){
+  try{
+    const[md,rd,ld,od,vd]=await Promise.all([fetchJson(DATA.matches),fetchJson(DATA.results),fetchJson(DATA.leaderboard),fetchJson(DATA.overrides),fetchJson(DATA.venues)]);
+    allMatches=mergeData(md.matches||[],rd.results||[],od);
+    renderStats(allMatches,ld);
+    renderGroups(allMatches);
+    renderCalendar(allMatches);
+    renderBracket(allMatches);
+    renderVenues(vd.venues||[]);
+    renderLeaderboard(ld.entries||[],ld.generatedAtUtc);
     renderPickEditor(allMatches);
     loadDraft(allMatches);
-    updatePickSummary(allMatches.filter(m => m.stage === "group"));
-
-    // Wire up buttons
-    document.getElementById("btn-save-picks").addEventListener("click", () => savePicks(allMatches));
-    document.getElementById("btn-export-picks").addEventListener("click", () => {
-      const payload = buildPickPayload(allMatches);
-      downloadJson(`pick-${payload.userId}.json`, payload);
-      setStatus("📤 JSON exportado");
-    });
-    document.getElementById("btn-clear-picks").addEventListener("click", () => {
-      localStorage.removeItem(STORAGE_KEY);
-      document.querySelectorAll(".pick-input").forEach(el => { if (!el.disabled) el.value = ""; });
-      updatePickSummary(allMatches.filter(m => m.stage === "group"));
-      setStatus("🗑️ Borrador limpiado");
-    });
-
-  } catch (err) {
-    document.getElementById("app-main").innerHTML = `
-      <div class="empty-state">
-        <p>⚠️ Error cargando datos</p>
-        <p>${err.message}</p>
-      </div>
-    `;
-    console.error(err);
-  }
+    updatePickSummary(allMatches.filter(m=>m.stage==="group"));
+    document.getElementById("btn-save-picks").addEventListener("click",()=>savePicks(allMatches));
+    document.getElementById("btn-export-picks").addEventListener("click",()=>{const p=buildPickPayload(allMatches);downloadJson(`pick-${p.userId}.json`,p);setStatus("📤 Exportado")});
+    document.getElementById("btn-clear-picks").addEventListener("click",()=>{localStorage.removeItem(STORAGE_KEY);document.querySelectorAll(".pick-input").forEach(el=>{if(!el.disabled)el.value=""});updatePickSummary(allMatches.filter(m=>m.stage==="group"));setStatus("🗑️ Limpiado")});
+  }catch(e){document.getElementById("app-main").innerHTML=`<div class="empty-state">⚠️ ${e.message}</div>`;console.error(e)}
 }
 
-/* === INIT === */
 initTabs();
 initAuth();

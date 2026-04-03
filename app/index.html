@@ -5,69 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiniela Mundial 2026</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
   <body>
-
-    <!-- AUTH SCREEN -->
+    <!-- AUTH -->
     <div id="auth-screen" class="shell auth-screen">
       <img src="./wc2026-logo.png" alt="FIFA World Cup 2026" class="wc-logo-img" />
       <h1>Quiniela Mundial 2026</h1>
-      <p class="auth-subtitle">🇲🇽 🇺🇸 🇨🇦 &mdash; Inicia sesión para participar</p>
+      <p class="auth-subtitle">🇲🇽 🇺🇸 🇨🇦 — Inicia sesión para participar</p>
       <button class="auth-btn" id="btn-login">Entrar</button>
     </div>
 
-    <!-- MAIN APP (hidden until login) -->
+    <!-- APP -->
     <main id="app-main" class="shell" style="display:none">
-
-      <!-- HERO -->
-      <section class="hero">
-        <img src="./wc2026-logo.png" alt="FIFA World Cup 2026" class="wc-logo-img hero-logo-img" />
+      <header class="hero">
+        <img src="./wc2026-logo.png" alt="WC2026" class="wc-logo-img hero-logo-img" />
         <h1 id="tournament-name">Quiniela Mundial 2026</h1>
         <div class="hero-meta">
-          <span class="pill" id="tournament-timezone">UTC</span>
           <span class="pill user-pill" id="user-display">—</span>
           <button class="auth-btn logout" id="btn-logout">Salir</button>
         </div>
-      </section>
+      </header>
 
-      <!-- STATS -->
-      <section class="stats-grid">
-        <article class="stat-card">
-          <p class="stat-value" id="stat-matches">0</p>
-          <p class="stat-label">Partidos</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-value" id="stat-locked">0</p>
-          <p class="stat-label">Cerrados</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-value" id="stat-players">0</p>
-          <p class="stat-label">Participantes</p>
-        </article>
-        <article class="stat-card">
-          <p class="stat-value" id="stat-finished">0</p>
-          <p class="stat-label">Jugados</p>
-        </article>
-      </section>
+      <section class="stats-grid" id="stats-grid"></section>
 
-      <!-- TABS -->
       <nav class="nav-tabs" role="tablist">
-        <button class="nav-tab active" data-tab="tab-matches" role="tab">🏟️ Partidos</button>
+        <button class="nav-tab active" data-tab="tab-groups" role="tab">⚽ Grupos</button>
+        <button class="nav-tab" data-tab="tab-calendar" role="tab">📅 Calendario</button>
+        <button class="nav-tab" data-tab="tab-bracket" role="tab">🏆 Eliminatoria</button>
+        <button class="nav-tab" data-tab="tab-venues" role="tab">🗺️ Sedes</button>
         <button class="nav-tab" data-tab="tab-picks" role="tab">📝 Mi Quiniela</button>
         <button class="nav-tab" data-tab="tab-leaderboard" role="tab">🏅 Tabla</button>
       </nav>
 
-      <!-- TAB: PARTIDOS -->
-      <div id="tab-matches" class="tab-panel active">
-        <div id="matches-container"></div>
+      <!-- GROUPS -->
+      <div id="tab-groups" class="tab-panel active"></div>
+
+      <!-- CALENDAR -->
+      <div id="tab-calendar" class="tab-panel">
+        <div class="calendar-filters" id="calendar-filters"></div>
+        <div id="calendar-list"></div>
       </div>
 
-      <!-- TAB: MI QUINIELA -->
+      <!-- BRACKET -->
+      <div id="tab-bracket" class="tab-panel">
+        <div class="bracket-container" id="bracket-container"></div>
+      </div>
+
+      <!-- VENUES -->
+      <div id="tab-venues" class="tab-panel">
+        <div id="venues-map" class="venues-map"></div>
+        <div id="venues-list" class="venues-grid"></div>
+      </div>
+
+      <!-- PICKS -->
       <div id="tab-picks" class="tab-panel">
-        <div class="pick-summary" id="pick-summary">
-          <strong>0</strong> de <strong>0</strong> picks capturados
-        </div>
+        <div class="pick-summary" id="pick-summary"></div>
         <div id="pick-editor"></div>
         <div class="form-actions">
           <button class="btn btn-primary" id="btn-save-picks">💾 Guardar picks</button>
@@ -77,23 +72,15 @@
         <p class="form-status" id="form-status"></p>
       </div>
 
-      <!-- TAB: LEADERBOARD -->
+      <!-- LEADERBOARD -->
       <div id="tab-leaderboard" class="tab-panel">
         <table class="leaderboard-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Jugador</th>
-              <th style="text-align:right">Puntos</th>
-            </tr>
-          </thead>
+          <thead><tr><th>#</th><th>Jugador</th><th style="text-align:right">Pts</th></tr></thead>
           <tbody id="leaderboard-body"></tbody>
         </table>
         <p class="form-status" id="leaderboard-updated"></p>
       </div>
-
     </main>
-
     <script type="module" src="./app.js"></script>
   </body>
 </html>
