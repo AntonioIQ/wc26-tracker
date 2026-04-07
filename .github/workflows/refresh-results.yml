@@ -2,7 +2,8 @@ name: Refresh Results
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    # 2 veces al día en horario de partidos (20:00 y 04:00 UTC = 2pm y 10pm México)
+    - cron: "0 20,4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -30,7 +31,7 @@ jobs:
         run: node scripts/ingest-results.js
 
       - name: Recalculate leaderboard
-        run: npm run build
+        run: npm run validate && npm run score
 
       - name: Commit changes if any
         run: |

@@ -22,46 +22,26 @@
     <main id="app-main" class="shell" style="display:none">
       <header class="hero">
         <img src="./wc2026-logo.png" alt="WC2026" class="wc-logo-img hero-logo-img" />
-        <h1 id="tournament-name">Quiniela Mundial 2026</h1>
         <div class="hero-meta">
           <span class="pill user-pill" id="user-display">—</span>
           <button class="auth-btn logout" id="btn-logout">Salir</button>
         </div>
       </header>
 
-      <section class="stats-grid" id="stats-grid"></section>
+      <!-- PODIO TOP 3 -->
+      <section class="podium" id="podium"></section>
 
       <nav class="nav-tabs" role="tablist">
-        <button class="nav-tab active" data-tab="tab-groups" role="tab">⚽ Grupos</button>
-        <button class="nav-tab" data-tab="tab-calendar" role="tab">📅 Calendario</button>
+        <button class="nav-tab active tab-highlight" data-tab="tab-picks" role="tab">📝 Mi Quiniela</button>
+        <button class="nav-tab" data-tab="tab-leaderboard" role="tab">🏅 Tabla</button>
+        <button class="nav-tab" data-tab="tab-groups" role="tab">⚽ Grupos</button>
+        <button class="nav-tab" data-tab="tab-calendar" role="tab">� Calendario</button>
         <button class="nav-tab" data-tab="tab-bracket" role="tab">🏆 Eliminatoria</button>
         <button class="nav-tab" data-tab="tab-venues" role="tab">🗺️ Sedes</button>
-        <button class="nav-tab" data-tab="tab-picks" role="tab">📝 Mi Quiniela</button>
-        <button class="nav-tab" data-tab="tab-leaderboard" role="tab">🏅 Tabla</button>
       </nav>
 
-      <!-- GROUPS -->
-      <div id="tab-groups" class="tab-panel active"></div>
-
-      <!-- CALENDAR -->
-      <div id="tab-calendar" class="tab-panel">
-        <div class="calendar-filters" id="calendar-filters"></div>
-        <div id="calendar-list"></div>
-      </div>
-
-      <!-- BRACKET -->
-      <div id="tab-bracket" class="tab-panel">
-        <div class="bracket-container" id="bracket-container"></div>
-      </div>
-
-      <!-- VENUES -->
-      <div id="tab-venues" class="tab-panel">
-        <div id="venues-map" class="venues-map"></div>
-        <div id="venues-list" class="venues-grid"></div>
-      </div>
-
-      <!-- PICKS -->
-      <div id="tab-picks" class="tab-panel">
+      <!-- PICKS (now first/default) -->
+      <div id="tab-picks" class="tab-panel active">
         <div class="pick-summary" id="pick-summary"></div>
         <div id="pick-editor"></div>
         <div class="form-actions">
@@ -80,6 +60,29 @@
         </table>
         <p class="form-status" id="leaderboard-updated"></p>
       </div>
+
+      <!-- GROUPS -->
+      <div id="tab-groups" class="tab-panel"></div>
+
+      <!-- CALENDAR -->
+      <div id="tab-calendar" class="tab-panel">
+        <div class="calendar-filters" id="calendar-filters"></div>
+        <div id="calendar-list"></div>
+      </div>
+
+      <!-- BRACKET -->
+      <div id="tab-bracket" class="tab-panel">
+        <div class="bracket-container" id="bracket-container"></div>
+      </div>
+
+      <!-- VENUES -->
+      <div id="tab-venues" class="tab-panel">
+        <div id="venues-map" class="venues-map"></div>
+        <div id="venues-list" class="venues-grid"></div>
+      </div>
+
+      <!-- TOURNAMENT STATS FOOTER -->
+      <section class="tournament-footer" id="tournament-footer"></section>
     </main>
     <script type="module" src="./app.js"></script>
   </body>

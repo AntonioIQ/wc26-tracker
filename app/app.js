@@ -1,11 +1,41 @@
-const DATA = { matches:"./data/matches.json", results:"./data/results.json", leaderboard:"./data/leaderboard.json", overrides:"./data/overrides.json", venues:"./data/venues.json" };
+// Datos se leen de GitHub raw (repo publico) con fallback a archivos locales
+const GH_RAW = "https://raw.githubusercontent.com/AntonioIQ/wc26-tracker/main/data";
+const DATA = {
+  matches: `${GH_RAW}/matches.json`,
+  results: `${GH_RAW}/results.json`,
+  leaderboard: `${GH_RAW}/leaderboard.json`,
+  overrides: `${GH_RAW}/overrides.json`,
+  venues: `${GH_RAW}/venues.json`
+};
+const DATA_LOCAL = {
+  matches: "./data/matches.json",
+  results: "./data/results.json",
+  leaderboard: "./data/leaderboard.json",
+  overrides: "./data/overrides.json",
+  venues: "./data/venues.json"
+};
 const FLAGS={"Mexico":"🇲🇽","South Africa":"🇿🇦","South Korea":"🇰🇷","Czechia":"🇨🇿","Canada":"🇨🇦","Bosnia and Herzegovina":"🇧🇦","Qatar":"🇶🇦","Switzerland":"🇨🇭","United States":"🇺🇸","Paraguay":"🇵🇾","Australia":"🇦🇺","Turkey":"🇹🇷","Brazil":"🇧🇷","Morocco":"🇲🇦","Haiti":"🇭🇹","Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Germany":"🇩🇪","Curacao":"🇨🇼","Netherlands":"🇳🇱","Japan":"🇯🇵","Ivory Coast":"🇨🇮","Ecuador":"🇪🇨","Sweden":"🇸🇪","Tunisia":"🇹🇳","Spain":"🇪🇸","Cape Verde":"🇨🇻","Belgium":"🇧🇪","Egypt":"🇪🇬","Saudi Arabia":"🇸🇦","Uruguay":"🇺🇾","Iran":"🇮🇷","New Zealand":"🇳🇿","France":"🇫🇷","Senegal":"🇸🇳","Iraq":"🇮🇶","Norway":"🇳🇴","Argentina":"🇦🇷","Algeria":"🇩🇿","Austria":"🇦🇹","Jordan":"🇯🇴","Portugal":"🇵🇹","DR Congo":"🇨🇩","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croatia":"🇭🇷","Ghana":"🇬🇭","Panama":"🇵🇦","Uzbekistan":"🇺🇿","Colombia":"🇨🇴"};
 const STAGES={"group":"Fase de Grupos","round-of-32":"Treintaidosavos","round-of-16":"Octavos","quarterfinal":"Cuartos","semifinal":"Semifinal","third-place":"3er Lugar","final":"Final"};
 const STAGE_BADGE={"group":"badge-group","round-of-32":"badge-r32","round-of-16":"badge-r16","quarterfinal":"badge-qf","semifinal":"badge-sf","third-place":"badge-final","final":"badge-final"};
 const STORAGE_KEY="quiniela-wc26-draft";
 let currentUser=null, allMatches=[], venuesData=[];
 
-async function fetchJson(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw new Error(`Error ${u}`);return r.json()}
+async function fetchJson(u){
+  try{
+    const r=await fetch(u,{cache:"no-store"});
+    if(!r.ok)throw new Error(`Error ${u}`);
+    return r.json();
+  }catch(e){
+    // Fallback a archivo local si GitHub raw falla
+    const localKey=Object.keys(DATA).find(k=>DATA[k]===u);
+    if(localKey&&DATA_LOCAL[localKey]){
+      const r2=await fetch(DATA_LOCAL[localKey],{cache:"no-store"});
+      if(!r2.ok)throw new Error(`Error ${DATA_LOCAL[localKey]}`);
+      return r2.json();
+    }
+    throw e;
+  }
+}
 function fl(t){return FLAGS[t]||"🏳️"}
 function fmtDate(u){if(!u)return"—";return new Intl.DateTimeFormat("es-MX",{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:true}).format(new Date(u))}
 function fmtDay(u){if(!u)return"—";return new Intl.DateTimeFormat("es-MX",{weekday:"long",day:"numeric",month:"long"}).format(new Date(u))}
@@ -36,17 +66,84 @@ function initTabs(){
   }));
 }
 
-/* STATS */
-function renderStats(matches,lb){
-  const now=Date.now();
-  const locked=matches.filter(m=>Date.parse(m.lockUtc)<=now).length;
-  const finished=matches.filter(m=>m.displayStatus==="finished").length;
-  const live=matches.filter(m=>m.displayStatus==="live").length;
-  const items=[
-    {v:matches.length,l:"Partidos"},{v:finished,l:"Jugados"},{v:live||"—",l:"En Vivo"},
-    {v:locked,l:"Cerrados"},{v:lb.entries?.length||0,l:"Jugadores"}
-  ];
-  document.getElementById("stats-grid").innerHTML=items.map(i=>`<article class="stat-card"><p class="stat-value">${i.v}</p><p class="stat-label">${i.l}</p></article>`).join("");
+/* PODIUM */
+function renderPodium(lb,matches){
+  const container=document.getElementById("podium");
+  const entries=lb.entries||[];
+  const hasResults=matches.some(m=>m.displayStatus==="finished");
+
+  if(!hasResults){
+    const firstMatch=matches.filter(m=>m.kickoffUtc).sort((a,b)=>a.kickoffUtc.localeCompare(b.kickoffUtc))[0];
+    if(firstMatch){
+      const diff=Date.parse(firstMatch.kickoffUtc)-Date.now();
+      if(diff>0){
+        const days=Math.floor(diff/(1000*60*60*24));
+        const hrs=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+        container.innerHTML=`<div class="podium-countdown">⏳ Faltan <strong>${days} días y ${hrs} horas</strong> para el inicio<br><span style="font-size:0.78rem">${fl(firstMatch.homeTeam)} ${firstMatch.homeTeam} vs ${firstMatch.awayTeam} ${fl(firstMatch.awayTeam)}</span></div>`;
+        return;
+      }
+    }
+  }
+
+  if(!entries.length||entries.every(e=>e.totalPoints===0&&!hasResults)){
+    container.innerHTML=`<div class="podium-countdown">🏆 ${entries.length} jugadores registrados · Esperando resultados</div>`;
+    return;
+  }
+
+  const medals=["gold","silver","bronze"];
+  const icons=["🥇","🥈","🥉"];
+  const top=entries.slice(0,3);
+  // Show in order: silver(1), gold(0), bronze(2) for visual podium effect
+  const order=top.length>=3?[top[1],top[0],top[2]]:top.length===2?[top[1],top[0]]:[top[0]];
+  const orderIdx=top.length>=3?[1,0,2]:top.length===2?[1,0]:[0];
+
+  container.innerHTML=order.map((e,i)=>{
+    const idx=orderIdx[i];
+    return `<div class="podium-card ${medals[idx]}"><span class="podium-medal">${icons[idx]}</span><span class="podium-name">${e.displayName}</span><span class="podium-pts">${e.totalPoints} pts</span></div>`;
+  }).join("");
+}
+
+/* TOURNAMENT FOOTER STATS */
+function renderFooterStats(matches){
+  const container=document.getElementById("tournament-footer");
+  const finished=matches.filter(m=>m.displayStatus==="finished");
+  const totalGoals=finished.reduce((s,m)=>{
+    const h=m.result?.homeScore||0,a=m.result?.awayScore||0;
+    return s+h+a;
+  },0);
+
+  let bestMatch=null,bestGoals=0;
+  finished.forEach(m=>{
+    const g=(m.result?.homeScore||0)+(m.result?.awayScore||0);
+    if(g>bestGoals){bestGoals=g;bestMatch=m}
+  });
+
+  const teamGoals={};
+  finished.forEach(m=>{
+    if(m.result?.homeScore!=null){
+      teamGoals[m.homeTeam]=(teamGoals[m.homeTeam]||0)+m.result.homeScore;
+      teamGoals[m.awayTeam]=(teamGoals[m.awayTeam]||0)+m.result.awayScore;
+    }
+  });
+  const topTeam=Object.entries(teamGoals).sort((a,b)=>b[1]-a[1])[0];
+
+  if(!finished.length){
+    container.innerHTML=`<p class="tournament-footer-title">Mundial 2026</p><div class="footer-stats">
+      <div class="footer-stat"><p class="footer-stat-value">48</p><p class="footer-stat-label">Equipos</p></div>
+      <div class="footer-stat"><p class="footer-stat-value">16</p><p class="footer-stat-label">Sedes</p></div>
+      <div class="footer-stat"><p class="footer-stat-value">104</p><p class="footer-stat-label">Partidos</p></div>
+      <div class="footer-stat"><p class="footer-stat-value">3</p><p class="footer-stat-label">Países</p></div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML=`<p class="tournament-footer-title">Stats del Torneo</p><div class="footer-stats">
+    <div class="footer-stat"><p class="footer-stat-value">${finished.length}/${matches.length}</p><p class="footer-stat-label">Partidos</p></div>
+    <div class="footer-stat"><p class="footer-stat-value">${totalGoals}</p><p class="footer-stat-label">Goles</p></div>
+    <div class="footer-stat"><p class="footer-stat-value">${finished.length?((totalGoals/finished.length).toFixed(1)):"—"}</p><p class="footer-stat-label">Goles/Partido</p></div>
+    <div class="footer-stat"><p class="footer-stat-value">${bestMatch?`${bestGoals} ⚽`:"—"}</p><p class="footer-stat-label">${bestMatch?`${bestMatch.homeTeam} vs ${bestMatch.awayTeam}`:"Más goles"}</p></div>
+    <div class="footer-stat"><p class="footer-stat-value">${topTeam?`${fl(topTeam[0])} ${topTeam[1]}`:"—"}</p><p class="footer-stat-label">${topTeam?"Más goleador":"Top goleador"}</p></div>
+  </div>`;
 }
 
 /* GROUPS */
@@ -203,6 +300,9 @@ function renderPickEditor(matches){
 function updatePickSummary(matches){
   const filled=matches.filter(m=>{const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`);return h&&a&&h.value!==""&&a.value!==""}).length;
   document.getElementById("pick-summary").innerHTML=`<strong>${filled}</strong> de <strong>${matches.length}</strong> picks capturados`;
+  // Update pending indicator on tab
+  const tab=document.querySelector('.tab-highlight');
+  if(tab){filled<matches.length?tab.classList.add("has-pending"):tab.classList.remove("has-pending")}
 }
 
 function collectPicks(matches){
@@ -244,7 +344,7 @@ async function boot(){
   try{
     const[md,rd,ld,od,vd]=await Promise.all([fetchJson(DATA.matches),fetchJson(DATA.results),fetchJson(DATA.leaderboard),fetchJson(DATA.overrides),fetchJson(DATA.venues)]);
     allMatches=mergeData(md.matches||[],rd.results||[],od);
-    renderStats(allMatches,ld);
+    renderPodium(ld,allMatches);
     renderGroups(allMatches);
     renderCalendar(allMatches);
     renderBracket(allMatches);
@@ -253,6 +353,7 @@ async function boot(){
     renderPickEditor(allMatches);
     loadDraft(allMatches);
     updatePickSummary(allMatches.filter(m=>m.stage==="group"));
+    renderFooterStats(allMatches);
     document.getElementById("btn-save-picks").addEventListener("click",()=>savePicks(allMatches));
     document.getElementById("btn-export-picks").addEventListener("click",()=>{const p=buildPickPayload(allMatches);downloadJson(`pick-${p.userId}.json`,p);setStatus("📤 Exportado")});
     document.getElementById("btn-clear-picks").addEventListener("click",()=>{localStorage.removeItem(STORAGE_KEY);document.querySelectorAll(".pick-input").forEach(el=>{if(!el.disabled)el.value=""});updatePickSummary(allMatches.filter(m=>m.stage==="group"));setStatus("🗑️ Limpiado")});
