@@ -2,8 +2,8 @@ name: Refresh Results
 
 on:
   schedule:
-    # 2 veces al día en horario de partidos (20:00 y 04:00 UTC = 2pm y 10pm México)
-    - cron: "0 20,4 * * *"
+    # 2 veces al día: 07:00 y 22:00 UTC = 1am y 4pm hora México
+    - cron: "0 7,22 * * *"
   workflow_dispatch:
 
 permissions:
