@@ -2,12 +2,12 @@
   "userId": "antapia3003",
   "displayName": "antapia3003",
   "email": "antapia3003@hotmail.com",
-  "submittedAtUtc": "2026-04-09T05:06:34.257Z",
+  "submittedAtUtc": "2026-04-09T07:39:26.231Z",
   "picks": [
     {
       "matchId": "match-001",
       "homeScore": 1,
-      "awayScore": 8
+      "awayScore": 0
     },
     {
       "matchId": "match-002",
@@ -361,6 +361,166 @@
     },
     {
       "matchId": "match-072",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-073",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-074",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-075",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-076",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-077",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-078",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-079",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-080",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-081",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-082",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-083",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-084",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-085",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-086",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-087",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-088",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-089",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-090",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-091",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-092",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-093",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-094",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-095",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-096",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-097",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-098",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-099",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-100",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-101",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-102",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-103",
+      "homeScore": null,
+      "awayScore": null
+    },
+    {
+      "matchId": "match-104",
       "homeScore": null,
       "awayScore": null
     }
