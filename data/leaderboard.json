@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-04-09T08:09:11.686Z",
+  "generatedAtUtc": "2026-04-09T18:16:48.689Z",
   "entries": [
     {
       "userId": "antapia3003",
@@ -14,6 +14,11 @@
     {
       "userId": "example-user",
       "displayName": "Usuario Demo",
+      "totalPoints": 0
+    },
+    {
+      "userId": "juliocesarfariasreyes",
+      "displayName": "juliocesarfariasreyes",
       "totalPoints": 0
     }
   ]
