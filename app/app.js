@@ -252,7 +252,7 @@ function matchCardHTML(m){
   const statusCls=m.displayStatus==="live"?"badge-live":m.displayStatus==="finished"?"badge-finished":"badge-scheduled";
   const statusTxt=m.displayStatus==="live"?"EN VIVO":m.displayStatus==="finished"?"FINAL":"PROG";
   const liveCls=m.displayStatus==="live"?" is-live":"";
-  return `<article class="match-card${liveCls}" onclick="openMatchContext(allMatches.find(x=>x.id==='${m.id}'))">
+  return `<article class="match-card${liveCls}" data-context-match="${m.id}">
     <div class="match-topline"><span class="badge ${badgeCls}">${stageLabel}</span><span class="badge ${statusCls}">${statusTxt}</span><span class="match-date">${fmtDate(m.kickoffUtc)}</span></div>
     <div class="teams-row">
       <div class="team-block home"><span class="team-flag">${fl(m.homeTeam)}</span><span class="team-name">${m.homeTeam}</span></div>
@@ -416,6 +416,35 @@ function loadDraft(matches){
   try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;const d=JSON.parse(raw),pm=new Map((d.picks||[]).map(p=>[p.matchId,p]));
   matches.forEach(m=>{const p=pm.get(m.id);if(!p)return;const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`),q=document.querySelector(`[data-match-qualified="${m.id}"]`);if(h&&p.homeScore!==null)h.value=p.homeScore;if(a&&p.awayScore!==null)a.value=p.awayScore;if(q&&p.qualifiedTeam)q.value=p.qualifiedTeam})}catch(e){}}
 
+async function syncPicksFromRepo(matches){
+  if(!currentUser)return;
+  const email=currentUser?.email||"",name=currentUser?.user_metadata?.full_name||email.split("@")[0];
+  const userId=slugify(name)||slugify(email);
+  if(!userId)return;
+  try{
+    const url=`${GH_RAW}/picks/${userId}.json`;
+    const r=await fetch(url,{cache:"no-store"});
+    if(!r.ok)return;
+    const remote=await r.json();
+    const local=localStorage.getItem(STORAGE_KEY);
+    const localData=local?JSON.parse(local):null;
+    // Use remote if it's newer or local doesn't exist
+    const remoteTime=Date.parse(remote.submittedAtUtc||"2000-01-01");
+    const localTime=localData?Date.parse(localData.submittedAtUtc||"2000-01-01"):0;
+    if(remoteTime>=localTime){
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));
+      const pm=new Map((remote.picks||[]).map(p=>[p.matchId,p]));
+      matches.forEach(m=>{const p=pm.get(m.id);if(!p)return;
+        const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`),q=document.querySelector(`[data-match-qualified="${m.id}"]`);
+        if(h&&!h.disabled&&p.homeScore!==null)h.value=p.homeScore;
+        if(a&&!a.disabled&&p.awayScore!==null)a.value=p.awayScore;
+        if(q&&!q.disabled&&p.qualifiedTeam)q.value=p.qualifiedTeam;
+      });
+      updatePickSummary(matches);
+    }
+  }catch(e){/* fallback to localStorage, already loaded */}
+}
+
 function downloadJson(fn,d){const b=new Blob([JSON.stringify(d,null,2)+"\n"],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u)}
 
 /* MERGE */
@@ -437,10 +466,19 @@ async function boot(){
     renderLeaderboard(ld.entries||[],ld.generatedAtUtc);
     renderPickEditor(allMatches);
     loadDraft(allMatches);
+    syncPicksFromRepo(allMatches);
     updatePickSummary(allMatches);
     renderFooterStats(allMatches);
     renderWeatherBar();
     loadMatchWeather(allMatches);
+    // Event delegation for match context drawer
+    document.addEventListener("click",(e)=>{
+      const card=e.target.closest("[data-context-match]");
+      if(!card)return;
+      const matchId=card.dataset.contextMatch;
+      const match=allMatches.find(m=>m.id===matchId);
+      if(match)openMatchContext(match);
+    });
     document.getElementById("btn-save-picks").addEventListener("click",()=>savePicks(allMatches));
     document.getElementById("btn-export-picks").addEventListener("click",()=>{const p=buildPickPayload(allMatches);downloadJson(`pick-${p.userId}.json`,p);setStatus("📤 Exportado")});
     document.getElementById("btn-clear-picks").addEventListener("click",()=>{localStorage.removeItem(STORAGE_KEY);document.querySelectorAll(".pick-input").forEach(el=>{if(!el.disabled)el.value=""});document.querySelectorAll(".pick-qualified-select").forEach(el=>{if(!el.disabled)el.value=""});updatePickSummary(allMatches);setStatus("🗑️ Limpiado")});
