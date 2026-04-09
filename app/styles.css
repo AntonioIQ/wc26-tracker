@@ -197,3 +197,89 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   .score-display{font-size:1.1rem;min-width:50px}
   .footer-stats{grid-template-columns:repeat(2,1fr)}
 }
+
+/* CUSTOM MAP MARKERS */
+.venue-marker{background:none;border:none}
+.venue-marker-dot{display:flex;align-items:center;justify-content:center;width:32px;height:32px;font-size:18px;background:radial-gradient(circle,rgba(42,57,141,0.9),rgba(42,57,141,0.6));border:2px solid var(--wc-gold);border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.5),0 0 12px rgba(212,168,67,0.3);cursor:pointer;transition:transform 0.15s}
+.venue-marker-dot:hover{transform:scale(1.2)}
+
+/* WEATHER BAR */
+.weather-bar{display:flex;align-items:center;justify-content:center;gap:0.6rem;padding:0.5rem 0.75rem;background:linear-gradient(135deg,rgba(42,57,141,0.3),rgba(20,20,42,0.8));border-radius:var(--r);margin-bottom:0.5rem;font-size:0.78rem;color:var(--wc-muted);flex-wrap:wrap}
+.weather-bar:empty{display:none}
+.weather-icon{font-size:1.3rem}
+.weather-temp{font-size:1rem;font-weight:800;color:var(--wc-text)}
+.weather-desc{color:var(--wc-muted)}
+.weather-detail{font-size:0.7rem;color:var(--wc-muted)}
+.weather-loc{font-size:0.7rem;color:var(--wc-gold)}
+
+/* MATCH BOTTOM ROW */
+.match-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:0.3rem}
+.match-weather{font-size:0.75rem;color:var(--wc-muted);white-space:nowrap}
+.match-weather:not(:empty){padding:0.15rem 0.5rem;background:rgba(255,255,255,0.04);border-radius:50px}
+
+/* KNOCKOUT PICK QUALIFIED */
+.pick-qualified{display:flex;align-items:center;gap:0.3rem;flex-shrink:0;margin-left:0.3rem}
+.pick-qualified-label{font-size:0.65rem;color:var(--wc-muted);white-space:nowrap}
+.pick-qualified-select{background:var(--wc-input);color:var(--wc-text);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.3rem 0.4rem;font-size:0.75rem;font-weight:600;cursor:pointer;outline:none;max-width:120px}
+.pick-qualified-select:focus{border-color:var(--wc-blue);box-shadow:0 0 0 2px rgba(42,57,141,0.3)}
+.pick-qualified-select:disabled{opacity:0.25;cursor:not-allowed}
+.pick-ko-badge{color:var(--wc-gold);font-weight:600;font-size:0.65rem}
+
+/* CONTEXT DRAWER */
+.context-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:900;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.context-overlay.open{opacity:1;pointer-events:auto}
+.context-drawer{position:fixed;right:0;top:0;bottom:0;width:min(420px,90vw);background:var(--wc-dark);z-index:910;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 30px rgba(0,0,0,0.5)}
+.context-drawer.open{transform:translateX(0)}
+.context-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid var(--wc-border);flex-shrink:0}
+.context-title{font-size:0.9rem;font-weight:700}
+.context-close{background:none;border:none;color:var(--wc-muted);font-size:1.5rem;cursor:pointer;padding:0 0.3rem;line-height:1;transition:color 0.15s}
+.context-close:hover{color:var(--wc-red)}
+.context-tabs{display:flex;border-bottom:1px solid var(--wc-border);flex-shrink:0}
+.context-tab{flex:1;padding:0.6rem 0.3rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--wc-muted);font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.15s;text-align:center}
+.context-tab:hover{color:var(--wc-text)}
+.context-tab.active{color:var(--wc-gold);border-bottom-color:var(--wc-gold)}
+.context-panel{display:none;flex:1;overflow-y:auto;padding:1rem}
+.context-panel.active{display:block}
+
+/* LIVE SCORE IN CONTEXT */
+.ctx-score-card{text-align:center;padding:1.5rem 1rem;background:var(--wc-card);border-radius:var(--r);margin-bottom:1rem;box-shadow:var(--shadow)}
+.ctx-teams{display:flex;align-items:center;justify-content:center;gap:0.8rem;margin-bottom:0.5rem}
+.ctx-team{display:flex;flex-direction:column;align-items:center;gap:0.3rem;flex:1}
+.ctx-team img{width:48px;height:48px;border-radius:50%;background:var(--wc-card2);object-fit:contain}
+.ctx-team-name{font-size:0.8rem;font-weight:700}
+.ctx-score{font-size:2.5rem;font-weight:800;min-width:80px;color:var(--wc-gold)}
+.ctx-status{font-size:0.75rem;color:var(--wc-green);font-weight:600;margin-top:0.3rem}
+.ctx-status.finished{color:var(--wc-muted)}
+.ctx-venue{font-size:0.7rem;color:var(--wc-muted);margin-top:0.5rem}
+
+/* LINEUPS IN CONTEXT */
+.ctx-lineup-team{margin-bottom:1.2rem}
+.ctx-lineup-header{display:flex;align-items:center;gap:0.5rem;padding-bottom:0.4rem;border-bottom:1px solid var(--wc-border);margin-bottom:0.4rem}
+.ctx-lineup-header img{width:24px;height:24px;border-radius:50%;object-fit:contain}
+.ctx-lineup-name{font-size:0.85rem;font-weight:700}
+.ctx-formation{margin-left:auto;font-size:0.7rem;color:var(--wc-gold);background:rgba(212,168,67,0.1);padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:1px}
+.ctx-section-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--wc-muted);margin:0.6rem 0 0.3rem}
+.ctx-player{display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0.4rem;font-size:0.8rem;border-radius:6px;transition:background 0.1s}
+.ctx-player:hover{background:var(--wc-card)}
+.ctx-player-num{font-weight:700;min-width:22px;text-align:center;color:var(--wc-gold);font-size:0.75rem}
+.ctx-player-name{flex:1}
+.ctx-player-pos{font-size:0.6rem;color:var(--wc-muted);background:var(--wc-card);padding:1px 5px;border-radius:3px}
+.ctx-player-events{font-size:0.7rem}
+
+/* COMMENTARY IN CONTEXT */
+.ctx-tweet{background:var(--wc-card);border-radius:10px;padding:0.8rem;margin-bottom:0.6rem;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.ctx-tweet-author{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem}
+.ctx-tweet-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--wc-red),#ff6b6b);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:#fff;flex-shrink:0}
+.ctx-tweet-name{font-size:0.8rem;font-weight:700}
+.ctx-tweet-handle{font-size:0.7rem;color:var(--wc-muted)}
+.ctx-tweet-text{font-size:0.82rem;line-height:1.5;margin-bottom:0.4rem}
+.ctx-tweet-meta{display:flex;gap:0.8rem;font-size:0.68rem;color:var(--wc-muted)}
+
+.ctx-empty{text-align:center;padding:2rem 1rem;color:var(--wc-muted);font-size:0.85rem}
+.ctx-empty .ctx-empty-icon{font-size:2rem;margin-bottom:0.5rem}
+.ctx-loading{text-align:center;padding:2rem;color:var(--wc-muted)}
+.ctx-spinner{width:24px;height:24px;border:3px solid var(--wc-border);border-top-color:var(--wc-gold);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 0.5rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MATCH CARD CLICKABLE */
+.match-card{cursor:pointer}

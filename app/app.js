@@ -20,6 +20,42 @@ const STAGE_BADGE={"group":"badge-group","round-of-32":"badge-r32","round-of-16"
 const STORAGE_KEY="quiniela-wc26-draft";
 let currentUser=null, allMatches=[], venuesData=[];
 
+/* WEATHER */
+const WMO_ICONS={"0":"☀️","1":"🌤️","2":"⛅","3":"☁️","45":"🌫️","48":"🌫️","51":"🌦️","53":"🌦️","55":"🌧️","61":"🌧️","63":"🌧️","65":"🌧️","71":"🌨️","73":"🌨️","75":"🌨️","80":"🌦️","81":"🌧️","82":"⛈️","95":"⛈️","96":"⛈️","99":"⛈️"};
+const WMO_DESC={"0":"Despejado","1":"Mayormente despejado","2":"Parcialmente nublado","3":"Nublado","45":"Neblina","48":"Neblina","51":"Llovizna ligera","53":"Llovizna","55":"Llovizna fuerte","61":"Lluvia ligera","63":"Lluvia","65":"Lluvia fuerte","71":"Nieve ligera","73":"Nieve","75":"Nieve fuerte","80":"Chubascos","81":"Chubascos fuertes","82":"Tormenta","95":"Tormenta eléctrica","96":"Tormenta con granizo","99":"Tormenta severa"};
+
+async function fetchWeatherCurrent(lat,lng){
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&timezone=auto`);
+    if(!r.ok)return null;
+    return(await r.json()).current;
+  }catch(e){return null}
+}
+
+async function fetchWeatherForDate(lat,lng,date,hour){
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&hourly=temperature_2m,weather_code&start_date=${date}&end_date=${date}&timezone=UTC`);
+    if(!r.ok)return null;
+    const d=await r.json();
+    const idx=d.hourly?.time?.findIndex(t=>t.includes(`T${String(hour).padStart(2,"0")}:`));
+    if(idx===-1||idx===undefined)return null;
+    return{temp:d.hourly.temperature_2m[idx],code:d.hourly.weather_code[idx]};
+  }catch(e){return null}
+}
+
+function weatherIcon(code){return WMO_ICONS[String(code)]||"🌡️"}
+function weatherDesc(code){return WMO_DESC[String(code)]||""}
+
+async function renderWeatherBar(){
+  const el=document.getElementById("weather-bar");
+  const w=await fetchWeatherCurrent(19.3029,-99.1505);
+  if(!w){el.style.display="none";return}
+  const icon=weatherIcon(w.weather_code);
+  const desc=weatherDesc(w.weather_code);
+  el.innerHTML=`<span class="weather-icon">${icon}</span><span class="weather-temp">${Math.round(w.temperature_2m)}°C</span><span class="weather-desc">${desc}</span><span class="weather-detail">💧 ${w.relative_humidity_2m}% · 💨 ${Math.round(w.wind_speed_10m)} km/h</span><span class="weather-loc">📍 Ciudad de México</span>`;
+}
+
+
 async function fetchJson(u){
   try{
     const r=await fetch(u,{cache:"no-store"});
@@ -216,15 +252,34 @@ function matchCardHTML(m){
   const statusCls=m.displayStatus==="live"?"badge-live":m.displayStatus==="finished"?"badge-finished":"badge-scheduled";
   const statusTxt=m.displayStatus==="live"?"EN VIVO":m.displayStatus==="finished"?"FINAL":"PROG";
   const liveCls=m.displayStatus==="live"?" is-live":"";
-  return `<article class="match-card${liveCls}">
+  return `<article class="match-card${liveCls}" onclick="openMatchContext(allMatches.find(x=>x.id==='${m.id}'))">
     <div class="match-topline"><span class="badge ${badgeCls}">${stageLabel}</span><span class="badge ${statusCls}">${statusTxt}</span><span class="match-date">${fmtDate(m.kickoffUtc)}</span></div>
     <div class="teams-row">
       <div class="team-block home"><span class="team-flag">${fl(m.homeTeam)}</span><span class="team-name">${m.homeTeam}</span></div>
       <div class="score-display"><span>${fmtScore(m.result?.homeScore)}</span><span class="sep">-</span><span>${fmtScore(m.result?.awayScore)}</span></div>
       <div class="team-block away"><span class="team-flag">${fl(m.awayTeam)}</span><span class="team-name">${m.awayTeam}</span></div>
     </div>
-    <p class="match-venue-line">${m.venue||"Sede por confirmar"}</p>
+    <div class="match-bottom"><p class="match-venue-line">${m.venue||"Sede por confirmar"}</p><span class="match-weather" data-match-weather="${m.id}"></span></div>
   </article>`;
+}
+
+async function loadMatchWeather(matches){
+  const venueMap=new Map(venuesData.map(v=>[v.name,v]));
+  const now=Date.now();
+  const limit=16*24*60*60*1000;
+  for(const m of matches.filter(m=>m.kickoffUtc&&m.displayStatus==="scheduled")){
+    const diff=Date.parse(m.kickoffUtc)-now;
+    if(diff<0||diff>limit)continue;
+    const venueName=m.venue?.split(",")[0];
+    const venue=venuesData.find(v=>m.venue?.includes(v.name)||v.name.includes(venueName));
+    if(!venue)continue;
+    const date=m.kickoffUtc.slice(0,10);
+    const hour=parseInt(m.kickoffUtc.slice(11,13));
+    const w=await fetchWeatherForDate(venue.lat,venue.lng,date,hour);
+    if(!w)continue;
+    const el=document.querySelector(`[data-match-weather="${m.id}"]`);
+    if(el)el.innerHTML=`${weatherIcon(w.code)} ${Math.round(w.temp)}°C`;
+  }
 }
 
 /* BRACKET */
@@ -258,7 +313,8 @@ function initMap(){
   mapInstance=L.map("venues-map").setView([35,-95],3);
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(mapInstance);
   venuesData.forEach(v=>{
-    L.marker([v.lat,v.lng]).addTo(mapInstance).bindPopup(`<b>${v.flag} ${v.name}</b><br>${v.city}<br>Capacidad: ${v.capacity.toLocaleString()}<br><small>${v.description}</small>`);
+    const icon=L.divIcon({className:"venue-marker",html:`<span class="venue-marker-dot">${v.flag}</span>`,iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-18]});
+    L.marker([v.lat,v.lng],{icon}).addTo(mapInstance).bindPopup(`<div style="font-family:system-ui;min-width:180px"><b style="font-size:14px">${v.flag} ${v.name}</b><br><span style="color:#666">${v.city}</span><br><span style="color:#888;font-size:12px">🏟️ ${v.capacity.toLocaleString()} personas</span><br><small style="color:#999;line-height:1.3;display:block;margin-top:4px">${v.description}</small></div>`);
   });
 }
 
@@ -287,26 +343,55 @@ function renderLeaderboard(entries,gen){
 function renderPickEditor(matches){
   const container=document.getElementById("pick-editor");
   const gm=matches.filter(m=>m.stage==="group");
-  if(!gm.length){container.innerHTML=`<div class="empty-state">No hay partidos</div>`;return}
-  const groups={};
-  gm.forEach(m=>{const g=m.group||"?";if(!groups[g])groups[g]=[];groups[g].push(m)});
-  container.innerHTML=Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([g,items])=>`<div class="pick-section"><div class="pick-section-title">Grupo ${g}</div>${items.map(m=>{
-    const locked=Date.parse(m.lockUtc)<=Date.now();
-    return `<div class="pick-row ${locked?"locked":""}"><div class="pick-match-info"><p class="pick-match-title">${fl(m.homeTeam)} ${m.homeTeam} vs ${m.awayTeam} ${fl(m.awayTeam)}</p><p class="pick-match-meta">${fmtDate(m.kickoffUtc)}</p></div><div class="pick-inputs"><input class="pick-input" type="number" min="0" max="20" inputmode="numeric" data-match="${m.id}" data-side="home" ${locked?"disabled":""} aria-label="Goles ${m.homeTeam}"><span class="pick-sep">-</span><input class="pick-input" type="number" min="0" max="20" inputmode="numeric" data-match="${m.id}" data-side="away" ${locked?"disabled":""} aria-label="Goles ${m.awayTeam}"></div>${locked?'<span class="pick-lock-note">🔒</span>':""}</div>`;
-  }).join("")}</div>`).join("");
-  container.addEventListener("input",()=>updatePickSummary(gm),{passive:true});
+  const ko=matches.filter(m=>m.stage!=="group");
+
+  if(!gm.length&&!ko.length){container.innerHTML=`<div class="empty-state">No hay partidos</div>`;return}
+
+  let html="";
+
+  // Fase de grupos
+  if(gm.length){
+    const groups={};
+    gm.forEach(m=>{const g=m.group||"?";if(!groups[g])groups[g]=[];groups[g].push(m)});
+    html+=Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([g,items])=>`<div class="pick-section"><div class="pick-section-title">Grupo ${g}</div>${items.map(m=>pickRowHTML(m,false)).join("")}</div>`).join("");
+  }
+
+  // Fase eliminatoria
+  const koStages=["round-of-32","round-of-16","quarterfinal","semifinal","third-place","final"];
+  const koLabels={"round-of-32":"Treintaidosavos","round-of-16":"Octavos","quarterfinal":"Cuartos","semifinal":"Semifinales","third-place":"3er Lugar","final":"Final"};
+  for(const stage of koStages){
+    const sm=ko.filter(m=>m.stage===stage);
+    if(!sm.length)continue;
+    html+=`<div class="pick-section"><div class="pick-section-title">${koLabels[stage]||stage}</div>${sm.map(m=>pickRowHTML(m,true)).join("")}</div>`;
+  }
+
+  container.innerHTML=html;
+  const allPickable=[...gm,...ko];
+  container.addEventListener("input",()=>updatePickSummary(allPickable),{passive:true});
+}
+
+function pickRowHTML(m,isKnockout){
+  const locked=Date.parse(m.lockUtc)<=Date.now();
+  const qualifiedHtml=isKnockout?`<div class="pick-qualified"><label class="pick-qualified-label">Clasifica:</label><select class="pick-qualified-select" data-match-qualified="${m.id}" ${locked?"disabled":""}><option value="">—</option><option value="home">${fl(m.homeTeam)} ${m.homeTeam}</option><option value="away">${fl(m.awayTeam)} ${m.awayTeam}</option></select></div>`:"";
+  return `<div class="pick-row ${locked?"locked":""}"><div class="pick-match-info"><p class="pick-match-title">${fl(m.homeTeam)} ${m.homeTeam} vs ${m.awayTeam} ${fl(m.awayTeam)}</p><p class="pick-match-meta">${fmtDate(m.kickoffUtc)}${isKnockout?' · <span class="pick-ko-badge">Eliminatoria</span>':""}</p></div><div class="pick-inputs"><input class="pick-input" type="number" min="0" max="20" inputmode="numeric" data-match="${m.id}" data-side="home" ${locked?"disabled":""} aria-label="Goles ${m.homeTeam}"><span class="pick-sep">-</span><input class="pick-input" type="number" min="0" max="20" inputmode="numeric" data-match="${m.id}" data-side="away" ${locked?"disabled":""} aria-label="Goles ${m.awayTeam}"></div>${qualifiedHtml}${locked?'<span class="pick-lock-note">🔒</span>':""}</div>`;
 }
 
 function updatePickSummary(matches){
   const filled=matches.filter(m=>{const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`);return h&&a&&h.value!==""&&a.value!==""}).length;
   document.getElementById("pick-summary").innerHTML=`<strong>${filled}</strong> de <strong>${matches.length}</strong> picks capturados`;
-  // Update pending indicator on tab
   const tab=document.querySelector('.tab-highlight');
   if(tab){filled<matches.length?tab.classList.add("has-pending"):tab.classList.remove("has-pending")}
 }
 
 function collectPicks(matches){
-  return matches.filter(m=>m.stage==="group").map(m=>{const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`);return{matchId:m.id,homeScore:h&&h.value!==""?Number(h.value):null,awayScore:a&&a.value!==""?Number(a.value):null}});
+  return matches.map(m=>{
+    const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`);
+    const a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`);
+    const q=document.querySelector(`[data-match-qualified="${m.id}"]`);
+    const pick={matchId:m.id,homeScore:h&&h.value!==""?Number(h.value):null,awayScore:a&&a.value!==""?Number(a.value):null};
+    if(q&&q.value)pick.qualifiedTeam=q.value;
+    return pick;
+  });
 }
 
 function buildPickPayload(matches){
@@ -329,7 +414,7 @@ async function savePicks(matches){
 
 function loadDraft(matches){
   try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;const d=JSON.parse(raw),pm=new Map((d.picks||[]).map(p=>[p.matchId,p]));
-  matches.forEach(m=>{const p=pm.get(m.id);if(!p)return;const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`);if(h&&p.homeScore!==null)h.value=p.homeScore;if(a&&p.awayScore!==null)a.value=p.awayScore})}catch(e){}}
+  matches.forEach(m=>{const p=pm.get(m.id);if(!p)return;const h=document.querySelector(`[data-match="${m.id}"][data-side="home"]`),a=document.querySelector(`[data-match="${m.id}"][data-side="away"]`),q=document.querySelector(`[data-match-qualified="${m.id}"]`);if(h&&p.homeScore!==null)h.value=p.homeScore;if(a&&p.awayScore!==null)a.value=p.awayScore;if(q&&p.qualifiedTeam)q.value=p.qualifiedTeam})}catch(e){}}
 
 function downloadJson(fn,d){const b=new Blob([JSON.stringify(d,null,2)+"\n"],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u)}
 
@@ -352,13 +437,142 @@ async function boot(){
     renderLeaderboard(ld.entries||[],ld.generatedAtUtc);
     renderPickEditor(allMatches);
     loadDraft(allMatches);
-    updatePickSummary(allMatches.filter(m=>m.stage==="group"));
+    updatePickSummary(allMatches);
     renderFooterStats(allMatches);
+    renderWeatherBar();
+    loadMatchWeather(allMatches);
     document.getElementById("btn-save-picks").addEventListener("click",()=>savePicks(allMatches));
     document.getElementById("btn-export-picks").addEventListener("click",()=>{const p=buildPickPayload(allMatches);downloadJson(`pick-${p.userId}.json`,p);setStatus("📤 Exportado")});
-    document.getElementById("btn-clear-picks").addEventListener("click",()=>{localStorage.removeItem(STORAGE_KEY);document.querySelectorAll(".pick-input").forEach(el=>{if(!el.disabled)el.value=""});updatePickSummary(allMatches.filter(m=>m.stage==="group"));setStatus("🗑️ Limpiado")});
+    document.getElementById("btn-clear-picks").addEventListener("click",()=>{localStorage.removeItem(STORAGE_KEY);document.querySelectorAll(".pick-input").forEach(el=>{if(!el.disabled)el.value=""});document.querySelectorAll(".pick-qualified-select").forEach(el=>{if(!el.disabled)el.value=""});updatePickSummary(allMatches);setStatus("🗑️ Limpiado")});
   }catch(e){document.getElementById("app-main").innerHTML=`<div class="empty-state">⚠️ ${e.message}</div>`;console.error(e)}
 }
 
+/* MATCH CONTEXT DRAWER */
+const PERIODISTAS_MAP={"davidfaitelson_":{name:"David Faitelson",initials:"DF"},"cmabortin":{name:"Christian Martinoli",initials:"CM"},"luisgarciaPlays":{name:"Luis García",initials:"LG"},"meabortin":{name:"David Medrano",initials:"DM"},"aztecadeportes":{name:"Azteca Deportes",initials:"AD"},"tudnmex":{name:"TUDN MEX",initials:"TU"},"josramnfernndez1":{name:"José Ramón Fdez.",initials:"JR"}};
+
+function initContextDrawer(){
+  const overlay=document.getElementById("context-overlay");
+  const drawer=document.getElementById("context-drawer");
+  const closeBtn=document.getElementById("context-close");
+
+  function close(){overlay.classList.remove("open");drawer.classList.remove("open")}
+  overlay.addEventListener("click",close);
+  closeBtn.addEventListener("click",close);
+
+  document.querySelectorAll(".context-tab").forEach(t=>t.addEventListener("click",()=>{
+    document.querySelectorAll(".context-tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".context-panel").forEach(p=>p.classList.remove("active"));
+    t.classList.add("active");
+    document.getElementById(t.dataset.ctab).classList.add("active");
+  }));
+}
+
+function openMatchContext(match){
+  const overlay=document.getElementById("context-overlay");
+  const drawer=document.getElementById("context-drawer");
+  document.getElementById("context-title").textContent=`${fl(match.homeTeam)} ${match.homeTeam} vs ${match.awayTeam} ${fl(match.awayTeam)}`;
+  overlay.classList.add("open");
+  drawer.classList.add("open");
+
+  // Reset tabs to live
+  document.querySelectorAll(".context-tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".context-panel").forEach(p=>p.classList.remove("active"));
+  document.querySelector('[data-ctab="ctx-live"]').classList.add("active");
+  document.getElementById("ctx-live").classList.add("active");
+
+  renderCtxLive(match);
+  loadCtxLineups(match);
+  loadCtxCommentary(match);
+}
+
+function renderCtxLive(m){
+  const el=document.getElementById("ctx-live");
+  const hs=fmtScore(m.result?.homeScore),as=fmtScore(m.result?.awayScore);
+  const statusTxt=m.displayStatus==="live"?"🟢 EN VIVO":m.displayStatus==="finished"?"FINAL":fmtDate(m.kickoffUtc);
+  const statusCls=m.displayStatus==="finished"?"finished":"";
+  el.innerHTML=`<div class="ctx-score-card">
+    <div class="ctx-teams">
+      <div class="ctx-team"><span class="team-flag" style="font-size:2.5rem">${fl(m.homeTeam)}</span><span class="ctx-team-name">${m.homeTeam}</span></div>
+      <div class="ctx-score">${hs} - ${as}</div>
+      <div class="ctx-team"><span class="team-flag" style="font-size:2.5rem">${fl(m.awayTeam)}</span><span class="ctx-team-name">${m.awayTeam}</span></div>
+    </div>
+    <p class="ctx-status ${statusCls}">${statusTxt}</p>
+    <p class="ctx-venue">🏟️ ${m.venue||"Sede por confirmar"}</p>
+  </div>`;
+}
+
+async function callContext(body){
+  const r=await fetch("/.netlify/functions/match-context",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
+
+async function loadCtxLineups(match){
+  const el=document.getElementById("ctx-lineups");
+  el.innerHTML='<div class="ctx-loading"><div class="ctx-spinner"></div>Cargando alineaciones...</div>';
+
+  try{
+    // Find ESPN event by searching scoreboard
+    const sb=await callContext({action:"scoreboard",league:"fifa.world"});
+    const events=sb.events||[];
+    const homeLower=match.homeTeam.toLowerCase();
+    const awayLower=match.awayTeam.toLowerCase();
+    const evt=events.find(e=>{
+      const comp=e.competitions?.[0];
+      if(!comp)return false;
+      const h=(comp.competitors?.find(c=>c.homeAway==="home")?.team?.displayName||"").toLowerCase();
+      const a=(comp.competitors?.find(c=>c.homeAway==="away")?.team?.displayName||"").toLowerCase();
+      return(h.includes(homeLower)||homeLower.includes(h))&&(a.includes(awayLower)||awayLower.includes(a));
+    });
+
+    if(!evt){el.innerHTML='<div class="ctx-empty"><div class="ctx-empty-icon">👕</div>Alineaciones no disponibles.<br><small>Se publican poco antes del inicio.</small></div>';return}
+
+    const data=await callContext({action:"summary",league:"fifa.world",eventId:evt.id});
+    if(!data.lineups||!data.lineups.length){el.innerHTML='<div class="ctx-empty"><div class="ctx-empty-icon">👕</div>Alineaciones aún no confirmadas.</div>';return}
+
+    el.innerHTML=data.lineups.map(t=>`<div class="ctx-lineup-team">
+      <div class="ctx-lineup-header">${t.teamLogo?`<img src="${t.teamLogo}" alt="">`:""}<span class="ctx-lineup-name">${t.teamName}</span>${t.formation?`<span class="ctx-formation">${t.formation}</span>`:""}</div>
+      <div class="ctx-section-label">Titulares</div>
+      ${t.starters.map(p=>playerHTML(p)).join("")}
+      ${t.subs.length?`<div class="ctx-section-label">Suplentes</div>${t.subs.map(p=>playerHTML(p)).join("")}`:""}
+    </div>`).join("");
+  }catch(e){
+    el.innerHTML=`<div class="ctx-empty"><div class="ctx-empty-icon">⚠️</div>Error: ${e.message}</div>`;
+  }
+}
+
+function playerHTML(p){
+  let events="";
+  if(p.subbedIn)events+="🔼";if(p.subbedOut)events+="🔽";
+  if(p.yellowCard)events+="🟨";if(p.redCard)events+="🟥";
+  return `<div class="ctx-player"><span class="ctx-player-num">${p.number}</span><span class="ctx-player-name">${p.name}</span><span class="ctx-player-events">${events}</span>${p.position?`<span class="ctx-player-pos">${p.position}</span>`:""}</div>`;
+}
+
+async function loadCtxCommentary(match){
+  const el=document.getElementById("ctx-commentary");
+  el.innerHTML='<div class="ctx-loading"><div class="ctx-spinner"></div>Buscando comentarios...</div>';
+
+  try{
+    const data=await callContext({action:"commentary",teams:[match.homeTeam,match.awayTeam]});
+    if(!data.available){el.innerHTML='<div class="ctx-empty"><div class="ctx-empty-icon">📺</div>Comentarios no disponibles.<br><small>Xpoz no está configurado.</small></div>';return}
+    if(!data.posts||!data.posts.length){el.innerHTML='<div class="ctx-empty"><div class="ctx-empty-icon">🤷</div>Sin comentarios recientes sobre este partido.</div>';return}
+
+    el.innerHTML=data.posts.map(p=>{
+      const handle=(p.author||"").toLowerCase();
+      const info=Object.entries(PERIODISTAS_MAP).find(([k])=>handle.includes(k));
+      const name=info?info[1].name:p.author;
+      const initials=info?info[1].initials:"??";
+      return `<div class="ctx-tweet">
+        <div class="ctx-tweet-author"><div class="ctx-tweet-avatar">${initials}</div><div><div class="ctx-tweet-name">${name}</div><div class="ctx-tweet-handle">@${p.author}</div></div></div>
+        <div class="ctx-tweet-text">${p.text}</div>
+        <div class="ctx-tweet-meta"><span>❤️ ${p.likes||0}</span><span>🔄 ${p.retweets||0}</span></div>
+      </div>`;
+    }).join("");
+  }catch(e){
+    el.innerHTML=`<div class="ctx-empty"><div class="ctx-empty-icon">⚠️</div>Error: ${e.message}</div>`;
+  }
+}
+
+initContextDrawer();
 initTabs();
 initAuth();

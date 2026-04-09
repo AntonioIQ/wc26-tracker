@@ -28,7 +28,7 @@ function getOutcome(homeScore, awayScore) {
   return "draw";
 }
 
-function scorePick(pick, result) {
+function scorePick(pick, result, match) {
   if (
     result.homeScore === null ||
     result.awayScore === null ||
@@ -38,18 +38,36 @@ function scorePick(pick, result) {
     return 0;
   }
 
+  let points = 0;
+
+  // Marcador exacto al 90 min: 3 puntos
   const exact = pick.homeScore === result.homeScore && pick.awayScore === result.awayScore;
   if (exact) {
-    return 3;
+    points = 3;
+  } else {
+    // Signo correcto al 90 min: 1 punto
+    const predictedOutcome = getOutcome(pick.homeScore, pick.awayScore);
+    const actualOutcome = getOutcome(result.homeScore, result.awayScore);
+    if (predictedOutcome === actualOutcome) {
+      points = 1;
+    }
   }
 
-  const predictedOutcome = getOutcome(pick.homeScore, pick.awayScore);
-  const actualOutcome = getOutcome(result.homeScore, result.awayScore);
+  // Punto extra por clasificado en eliminatoria (solo si empate al 90)
+  const isKnockout = match && match.stage !== "group";
+  if (isKnockout && result.qualifiedTeam && pick.qualifiedTeam) {
+    const drewAt90 = result.homeScore === result.awayScore;
+    if (drewAt90 && pick.qualifiedTeam === result.qualifiedTeam) {
+      points += 1;
+    }
+  }
 
-  return predictedOutcome === actualOutcome ? 1 : 0;
+  return points;
 }
 
 function buildLeaderboard() {
+  const matchesData = readJson("matches.json");
+  const matchMap = new Map((matchesData.matches || []).map((m) => [m.id, m]));
   const results = readJson("results.json").results || [];
   const resultMap = new Map(results.map((result) => [result.matchId, result]));
   const picksDir = path.join(dataDir, "picks");
@@ -59,10 +77,11 @@ function buildLeaderboard() {
     const content = JSON.parse(fs.readFileSync(path.join(picksDir, file), "utf8"));
     const totalPoints = (content.picks || []).reduce((sum, pick) => {
       const result = resultMap.get(pick.matchId);
+      const match = matchMap.get(pick.matchId);
       if (!result) {
         return sum;
       }
-      return sum + scorePick(pick, result);
+      return sum + scorePick(pick, result, match);
     }, 0);
 
     return {

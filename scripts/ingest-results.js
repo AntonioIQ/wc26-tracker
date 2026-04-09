@@ -172,9 +172,35 @@ async function main() {
     }
 
     const status = mapStatus(apiMatch.status);
-    const fullTime = apiMatch.score?.fullTime || {};
-    const homeScore = fullTime.home ?? null;
-    const awayScore = fullTime.away ?? null;
+    const score = apiMatch.score || {};
+    const duration = score.duration || "REGULAR";
+    const regular = score.regularTime || score.fullTime || {};
+    const extra = score.extraTime || {};
+    const penalties = score.penalties || {};
+
+    // Marcador al 90 min (regularTime) para scoring de quiniela
+    const homeScore = regular.home ?? null;
+    const awayScore = regular.away ?? null;
+
+    // Info de eliminatoria: prórroga, penales, clasificado
+    const isKnockout = duration !== "REGULAR";
+    const extraHome = extra.home ?? null;
+    const extraAway = extra.away ?? null;
+    const penHome = penalties.home ?? null;
+    const penAway = penalties.away ?? null;
+
+    // Determinar clasificado en eliminatoria
+    let qualifiedTeam = null;
+    if (status === "finished" && isKnockout) {
+      const apiWinner = score.winner;
+      if (apiWinner === "HOME_TEAM") qualifiedTeam = "home";
+      else if (apiWinner === "AWAY_TEAM") qualifiedTeam = "away";
+    } else if (status === "finished") {
+      // Partido decidido en 90 min
+      if (homeScore !== null && awayScore !== null && homeScore !== awayScore) {
+        qualifiedTeam = homeScore > awayScore ? "home" : "away";
+      }
+    }
 
     const entry = {
       matchId: localId,
@@ -182,6 +208,12 @@ async function main() {
       homeScore,
       awayScore,
       winner: getWinner(homeScore, awayScore),
+      duration: isKnockout ? duration.toLowerCase() : "regular",
+      extraHome,
+      extraAway,
+      penHome,
+      penAway,
+      qualifiedTeam,
       source: "football-data.org",
       updatedAtUtc: new Date().toISOString()
     };

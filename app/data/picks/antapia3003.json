@@ -2,17 +2,17 @@
   "userId": "antapia3003",
   "displayName": "antapia3003",
   "email": "antapia3003@hotmail.com",
-  "submittedAtUtc": "2026-04-07T20:13:41.473Z",
+  "submittedAtUtc": "2026-04-08T07:03:16.397Z",
   "picks": [
     {
       "matchId": "match-001",
-      "homeScore": 0,
-      "awayScore": 0
+      "homeScore": 2,
+      "awayScore": 2
     },
     {
       "matchId": "match-002",
-      "homeScore": 1,
-      "awayScore": 1
+      "homeScore": null,
+      "awayScore": null
     },
     {
       "matchId": "match-003",
@@ -126,8 +126,8 @@
     },
     {
       "matchId": "match-025",
-      "homeScore": 1,
-      "awayScore": 0
+      "homeScore": null,
+      "awayScore": null
     },
     {
       "matchId": "match-026",
@@ -141,8 +141,8 @@
     },
     {
       "matchId": "match-028",
-      "homeScore": 0,
-      "awayScore": 1
+      "homeScore": null,
+      "awayScore": null
     },
     {
       "matchId": "match-029",
@@ -266,13 +266,13 @@
     },
     {
       "matchId": "match-053",
-      "homeScore": 1,
-      "awayScore": 1
+      "homeScore": null,
+      "awayScore": null
     },
     {
       "matchId": "match-054",
-      "homeScore": 0,
-      "awayScore": 2
+      "homeScore": null,
+      "awayScore": null
     },
     {
       "matchId": "match-055",

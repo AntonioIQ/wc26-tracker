@@ -28,6 +28,9 @@
         </div>
       </header>
 
+      <!-- WEATHER WIDGET -->
+      <div class="weather-bar" id="weather-bar"></div>
+
       <!-- PODIO TOP 3 -->
       <section class="podium" id="podium"></section>
 
@@ -35,7 +38,7 @@
         <button class="nav-tab active tab-highlight" data-tab="tab-picks" role="tab">📝 Mi Quiniela</button>
         <button class="nav-tab" data-tab="tab-leaderboard" role="tab">🏅 Tabla</button>
         <button class="nav-tab" data-tab="tab-groups" role="tab">⚽ Grupos</button>
-        <button class="nav-tab" data-tab="tab-calendar" role="tab">� Calendario</button>
+        <button class="nav-tab" data-tab="tab-calendar" role="tab">&#128197; Calendario</button>
         <button class="nav-tab" data-tab="tab-bracket" role="tab">🏆 Eliminatoria</button>
         <button class="nav-tab" data-tab="tab-venues" role="tab">🗺️ Sedes</button>
       </nav>
@@ -83,6 +86,23 @@
 
       <!-- TOURNAMENT STATS FOOTER -->
       <section class="tournament-footer" id="tournament-footer"></section>
+
+      <!-- MATCH CONTEXT DRAWER -->
+      <div class="context-overlay" id="context-overlay"></div>
+      <aside class="context-drawer" id="context-drawer">
+        <div class="context-header">
+          <span class="context-title" id="context-title">Contexto del partido</span>
+          <button class="context-close" id="context-close">&times;</button>
+        </div>
+        <div class="context-tabs">
+          <button class="context-tab active" data-ctab="ctx-live">⚽ En Vivo</button>
+          <button class="context-tab" data-ctab="ctx-lineups">👕 Alineaciones</button>
+          <button class="context-tab" data-ctab="ctx-commentary">📺 Comentaristas</button>
+        </div>
+        <div id="ctx-live" class="context-panel active"></div>
+        <div id="ctx-lineups" class="context-panel"></div>
+        <div id="ctx-commentary" class="context-panel"></div>
+      </aside>
     </main>
     <script type="module" src="./app.js"></script>
   </body>
