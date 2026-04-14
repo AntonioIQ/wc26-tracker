@@ -138,7 +138,8 @@ function renderPodium(lb,matches){
   container.innerHTML=order.map((e,i)=>{
     const idx=orderIdx[i];
     const av=e.avatar||"⚽";
-    return `<div class="podium-card ${medals[idx]}"><span class="podium-medal">${icons[idx]}</span><span style="font-size:1.5rem">${av}</span><span class="podium-name">${e.displayName}</span><span class="podium-pts">${e.totalPoints} pts</span></div>`;
+    const avHtml=av.startsWith("data:")?`<img src="${av}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--wc-gold)">`:`<span style="font-size:1.5rem">${av}</span>`;
+    return `<div class="podium-card ${medals[idx]}"><span class="podium-medal">${icons[idx]}</span>${avHtml}<span class="podium-name">${e.displayName}</span><span class="podium-pts">${e.totalPoints} pts</span></div>`;
   }).join("");
 }
 
@@ -337,7 +338,7 @@ function renderLeaderboard(entries,gen){
   if(!entries.length){body.innerHTML=`<tr><td colspan="3" class="empty-state">Sin participantes</td></tr>`;return}
   body.innerHTML=entries.map((e,i)=>{
     const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1;
-    const av=e.avatar?`<span class="lb-avatar">${e.avatar}</span>`:"";
+    const av=e.avatar?(e.avatar.startsWith("data:")?`<img class="lb-avatar-img" src="${e.avatar}">`:`<span class="lb-avatar">${e.avatar}</span>`):"";
     const tag=e.tagline?`<span class="lb-tagline">${e.tagline}</span>`:"";
     return `<tr><td class="rank-cell">${medal}</td><td>${av}${e.displayName}${tag}</td><td class="points-cell">${e.totalPoints}</td></tr>`;
   }).join("");
@@ -460,41 +461,130 @@ async function syncPicksFromRepo(matches){
         if(q&&!q.disabled&&p.qualifiedTeam)q.value=p.qualifiedTeam;
       });
       updatePickSummary(matches);
+      // Sync profile from repo if local profile is empty
+      const localProfile=getProfile();
+      if(!localProfile.displayName&&(remote.displayName||remote.avatar||remote.tagline)){
+        const synced={displayName:remote.displayName||"",avatar:remote.avatar||"",tagline:remote.tagline||""};
+        saveProfile(synced);
+        renderAvatarPreview(synced.avatar,document.getElementById("account-avatar-preview"));
+        renderHeaderAvatar(synced.avatar);
+        const ni=document.getElementById("profile-name");if(ni&&synced.displayName)ni.value=synced.displayName;
+        const ti=document.getElementById("profile-tagline");if(ti&&synced.tagline)ti.value=synced.tagline;
+      }
     }
   }catch(e){/* fallback to localStorage, already loaded */}
 }
 
-function initProfileEditor(){
+function resizeImageToDataUrl(file,size){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement("canvas");
+        canvas.width=size;canvas.height=size;
+        const ctx=canvas.getContext("2d");
+        // Crop to square from center
+        const min=Math.min(img.width,img.height);
+        const sx=(img.width-min)/2,sy=(img.height-min)/2;
+        ctx.drawImage(img,sx,sy,min,min,0,0,size,size);
+        resolve(canvas.toDataURL("image/jpeg",0.7));
+      };
+      img.onerror=reject;
+      img.src=e.target.result;
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderAvatarPreview(avatar,el){
+  if(avatar&&avatar.startsWith("data:")){
+    el.innerHTML=`<img src="${avatar}" alt="avatar">`;
+  }else{
+    el.textContent=avatar||"⚽";
+  }
+}
+
+function renderHeaderAvatar(avatar){
+  const btn=document.getElementById("btn-account");
+  if(avatar&&avatar.startsWith("data:")){
+    btn.innerHTML=`<img src="${avatar}" alt="avatar">`;
+  }else{
+    btn.textContent=avatar||"⚽";
+  }
+}
+
+function initAccountPanel(){
   const profile=getProfile();
+  const overlay=document.getElementById("account-overlay");
+  const preview=document.getElementById("account-avatar-preview");
   const nameInput=document.getElementById("profile-name");
   const taglineInput=document.getElementById("profile-tagline");
-  const avatarBtn=document.getElementById("btn-avatar");
   const picker=document.getElementById("avatar-picker");
+  const photoInput=document.getElementById("input-avatar-photo");
+  const statusEl=document.getElementById("profile-status");
 
-  // Set defaults
   const defaultName=currentUser?.user_metadata?.full_name||currentUser?.email?.split("@")[0]||"";
   nameInput.value=profile.displayName||defaultName;
   taglineInput.value=profile.tagline||"";
-  avatarBtn.textContent=profile.avatar||"⚽";
+  renderAvatarPreview(profile.avatar,preview);
+  renderHeaderAvatar(profile.avatar);
 
-  // Render avatar picker
-  picker.innerHTML=AVATAR_OPTIONS.map(a=>`<button class="avatar-option ${a===(profile.avatar||"⚽")?"selected":""}" data-av="${a}">${a}</button>`).join("");
+  // Open/close
+  document.getElementById("btn-account").addEventListener("click",()=>overlay.classList.add("open"));
+  document.getElementById("account-close").addEventListener("click",()=>overlay.classList.remove("open"));
+  overlay.addEventListener("click",(e)=>{if(e.target===overlay)overlay.classList.remove("open")});
 
-  avatarBtn.addEventListener("click",()=>{picker.style.display=picker.style.display==="none"?"flex":"none"});
+  // Emoji picker
+  picker.innerHTML=AVATAR_OPTIONS.map(a=>{
+    const cur=profile.avatar||"⚽";
+    return `<button class="avatar-option ${a===cur&&!cur.startsWith("data:")?"selected":""}" data-av="${a}">${a}</button>`;
+  }).join("");
+
+  document.getElementById("btn-pick-emoji").addEventListener("click",()=>{
+    picker.style.display=picker.style.display==="none"?"flex":"none";
+  });
 
   picker.addEventListener("click",(e)=>{
     const btn=e.target.closest("[data-av]");
     if(!btn)return;
     const av=btn.dataset.av;
-    avatarBtn.textContent=av;
+    const p=getProfile();p.avatar=av;saveProfile(p);
+    renderAvatarPreview(av,preview);
+    renderHeaderAvatar(av);
     picker.querySelectorAll(".avatar-option").forEach(b=>b.classList.remove("selected"));
     btn.classList.add("selected");
-    const p=getProfile();p.avatar=av;saveProfile(p);
     picker.style.display="none";
   });
 
-  nameInput.addEventListener("change",()=>{const p=getProfile();p.displayName=nameInput.value.trim()||defaultName;saveProfile(p)});
-  taglineInput.addEventListener("change",()=>{const p=getProfile();p.tagline=taglineInput.value.trim();saveProfile(p)});
+  // Photo upload
+  photoInput.addEventListener("change",async()=>{
+    const file=photoInput.files[0];
+    if(!file)return;
+    if(file.size>5*1024*1024){statusEl.textContent="Imagen muy grande (max 5MB)";statusEl.className="form-status error";return}
+    try{
+      const dataUrl=await resizeImageToDataUrl(file,64);
+      const p=getProfile();p.avatar=dataUrl;saveProfile(p);
+      renderAvatarPreview(dataUrl,preview);
+      renderHeaderAvatar(dataUrl);
+      picker.querySelectorAll(".avatar-option").forEach(b=>b.classList.remove("selected"));
+      statusEl.textContent="";
+    }catch(err){statusEl.textContent="Error al procesar imagen";statusEl.className="form-status error"}
+    photoInput.value="";
+  });
+
+  // Save profile button
+  document.getElementById("btn-save-profile").addEventListener("click",()=>{
+    const p=getProfile();
+    p.displayName=nameInput.value.trim()||defaultName;
+    p.tagline=taglineInput.value.trim();
+    saveProfile(p);
+    document.getElementById("user-display").textContent="👤 "+p.displayName;
+    statusEl.textContent="Perfil guardado";
+    statusEl.className="form-status";
+    setTimeout(()=>{statusEl.textContent=""},2000);
+  });
 }
 
 function downloadJson(fn,d){const b=new Blob([JSON.stringify(d,null,2)+"\n"],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u)}
@@ -517,7 +607,7 @@ async function boot(){
     renderVenues(vd.venues||[]);
     renderLeaderboard(ld.entries||[],ld.generatedAtUtc);
     renderPickEditor(allMatches);
-    initProfileEditor();
+    initAccountPanel();
     loadDraft(allMatches);
     syncPicksFromRepo(allMatches);
     updatePickSummary(allMatches);

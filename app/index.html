@@ -24,6 +24,7 @@
         <img src="./wc2026-logo.png" alt="WC2026" class="wc-logo-img hero-logo-img" />
         <div class="hero-meta">
           <button class="rules-link" id="btn-rules">Reglas</button>
+          <button class="account-avatar-btn" id="btn-account" title="Mi cuenta">⚽</button>
           <span class="pill user-pill" id="user-display">—</span>
           <button class="auth-btn logout" id="btn-logout">Salir</button>
         </div>
@@ -44,19 +45,35 @@
         <button class="nav-tab" data-tab="tab-venues" role="tab">🗺️ Sedes</button>
       </nav>
 
-      <!-- PICKS (now first/default) -->
-      <div id="tab-picks" class="tab-panel active">
-        <!-- PROFILE EDITOR -->
-        <div class="profile-editor" id="profile-editor">
-          <div class="profile-row">
-            <button class="profile-avatar-btn" id="btn-avatar" title="Cambiar avatar">⚽</button>
-            <div class="profile-fields">
-              <input class="profile-input" id="profile-name" type="text" placeholder="Tu nombre" maxlength="30">
-              <input class="profile-input profile-tagline" id="profile-tagline" type="text" placeholder="Frase corta (ej: El mero mero)" maxlength="60">
+      <!-- ACCOUNT PANEL -->
+      <div class="account-overlay" id="account-overlay">
+        <div class="account-panel">
+          <button class="rules-close" id="account-close">&times;</button>
+          <h2>Mi Cuenta</h2>
+          <div class="account-avatar-section">
+            <div class="account-avatar-preview" id="account-avatar-preview">⚽</div>
+            <div class="account-avatar-actions">
+              <label class="btn btn-secondary btn-sm" id="label-upload-photo">
+                Subir foto
+                <input type="file" accept="image/*" id="input-avatar-photo" style="display:none">
+              </label>
+              <button class="btn btn-secondary btn-sm" id="btn-pick-emoji">Usar emoji</button>
             </div>
           </div>
           <div class="avatar-picker" id="avatar-picker" style="display:none"></div>
+          <div class="account-fields">
+            <label class="account-label">Nombre</label>
+            <input class="profile-input" id="profile-name" type="text" placeholder="Tu nombre" maxlength="30">
+            <label class="account-label">Frase</label>
+            <input class="profile-input profile-tagline" id="profile-tagline" type="text" placeholder="Ej: El mero mero" maxlength="60">
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-save-profile" style="margin-top:0.8rem;width:100%">Guardar perfil</button>
+          <p class="form-status" id="profile-status"></p>
         </div>
+      </div>
+
+      <!-- PICKS (now first/default) -->
+      <div id="tab-picks" class="tab-panel active">
         <div class="pick-summary" id="pick-summary"></div>
         <div id="pick-editor"></div>
         <div class="form-actions">
