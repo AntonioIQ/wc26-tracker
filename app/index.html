@@ -23,6 +23,7 @@
       <header class="hero">
         <img src="./wc2026-logo.png" alt="WC2026" class="wc-logo-img hero-logo-img" />
         <div class="hero-meta">
+          <button class="rules-link" id="btn-rules">Reglas</button>
           <span class="pill user-pill" id="user-display">—</span>
           <button class="auth-btn logout" id="btn-logout">Salir</button>
         </div>
@@ -45,6 +46,17 @@
 
       <!-- PICKS (now first/default) -->
       <div id="tab-picks" class="tab-panel active">
+        <!-- PROFILE EDITOR -->
+        <div class="profile-editor" id="profile-editor">
+          <div class="profile-row">
+            <button class="profile-avatar-btn" id="btn-avatar" title="Cambiar avatar">⚽</button>
+            <div class="profile-fields">
+              <input class="profile-input" id="profile-name" type="text" placeholder="Tu nombre" maxlength="30">
+              <input class="profile-input profile-tagline" id="profile-tagline" type="text" placeholder="Frase corta (ej: El mero mero)" maxlength="60">
+            </div>
+          </div>
+          <div class="avatar-picker" id="avatar-picker" style="display:none"></div>
+        </div>
         <div class="pick-summary" id="pick-summary"></div>
         <div id="pick-editor"></div>
         <div class="form-actions">
@@ -86,6 +98,45 @@
 
       <!-- TOURNAMENT STATS FOOTER -->
       <section class="tournament-footer" id="tournament-footer"></section>
+
+      <!-- RULES MODAL -->
+      <div class="rules-overlay" id="rules-overlay">
+        <div class="rules-modal">
+          <button class="rules-close" id="rules-close">&times;</button>
+          <h2>Reglas de la Quiniela</h2>
+          <h3>Puntuacion</h3>
+          <ul>
+            <li><strong>3 puntos</strong> — Resultado exacto (ej: predices 2-1 y termina 2-1)</li>
+            <li><strong>1 punto</strong> — Resultado correcto sin marcador exacto (ej: predices 2-0 y termina 3-1, ambos victoria local)</li>
+            <li><strong>0 puntos</strong> — Fallo</li>
+          </ul>
+          <h3>Eliminatoria</h3>
+          <ul>
+            <li>El marcador que cuenta es el de <strong>90 minutos</strong> (tiempo reglamentario)</li>
+            <li>Si hay empate al 90, puedes elegir quien clasifica para ganar <strong>1 punto extra</strong></li>
+            <li>Prorroga y penales no afectan el marcador de la quiniela</li>
+          </ul>
+          <h3>Cierre de picks</h3>
+          <ul>
+            <li>Cada partido se cierra <strong>1 segundo antes del kickoff</strong></li>
+            <li>Despues del cierre no puedes modificar ese pick</li>
+            <li>Puedes cambiar picks de partidos que no hayan cerrado en cualquier momento</li>
+          </ul>
+          <h3>Datos y resultados</h3>
+          <ul>
+            <li>Los resultados se actualizan automaticamente desde football-data.org</li>
+            <li>El organizador puede corregir resultados manualmente si la fuente automatica falla</li>
+            <li>La tabla de posiciones se recalcula automaticamente con cada cambio</li>
+          </ul>
+          <h3>General</h3>
+          <ul>
+            <li>Solo guardamos tu nombre, avatar, frase y picks</li>
+            <li>No compartimos nada con nadie, esto es entre nosotros</li>
+            <li>En caso de empate en puntos, se comparte la posicion</li>
+            <li>La palabra del organizador es final en caso de disputas</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- MATCH CONTEXT DRAWER -->
       <div class="context-overlay" id="context-overlay"></div>

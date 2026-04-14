@@ -1,19 +1,39 @@
 {
-  "generatedAtUtc": "2026-04-09T07:15:55.177Z",
+  "generatedAtUtc": "2026-04-14T06:04:14.897Z",
   "entries": [
     {
       "userId": "antapia3003",
       "displayName": "antapia3003",
+      "avatar": "",
+      "tagline": "",
       "totalPoints": 0
     },
     {
       "userId": "demo-import",
       "displayName": "Demo Import",
+      "avatar": "",
+      "tagline": "",
       "totalPoints": 0
     },
     {
       "userId": "example-user",
       "displayName": "Usuario Demo",
+      "avatar": "",
+      "tagline": "",
+      "totalPoints": 0
+    },
+    {
+      "userId": "jacob",
+      "displayName": "Jacob",
+      "avatar": "",
+      "tagline": "",
+      "totalPoints": 0
+    },
+    {
+      "userId": "juliocesarfariasreyes",
+      "displayName": "juliocesarfariasreyes",
+      "avatar": "",
+      "tagline": "",
       "totalPoints": 0
     }
   ]

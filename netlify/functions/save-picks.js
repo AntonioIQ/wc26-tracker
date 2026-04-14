@@ -36,12 +36,9 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: "Configuracion de servidor incompleta" };
   }
 
-  // Verify Netlify Identity token
-  const user = event.headers["authorization"]
-    ? JSON.parse(Buffer.from(event.headers["authorization"].split(".")[1], "base64").toString())
-    : null;
-
-  if (!user?.sub) {
+  // Verify Netlify Identity token via clientContext
+  const user = event.clientContext?.user;
+  if (!user) {
     return { statusCode: 401, body: "No autenticado" };
   }
 
@@ -76,7 +73,7 @@ exports.handler = async (event) => {
     await githubApi(`/contents/${filePath}`, {
       method: "PUT",
       body: JSON.stringify({
-        message: `picks: ${picks.displayName || slug}`,
+        message: `picks: ${picks.displayName || slug} [skip netlify]`,
         content,
         branch: BRANCH,
         ...(sha ? { sha } : {})

@@ -6,8 +6,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.227Z"
     },
     {
       "matchId": "match-002",
@@ -15,8 +21,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.227Z"
     },
     {
       "matchId": "match-003",
@@ -33,8 +45,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.227Z"
     },
     {
       "matchId": "match-005",
@@ -51,8 +69,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.227Z"
     },
     {
       "matchId": "match-007",
@@ -60,8 +84,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.227Z"
     },
     {
       "matchId": "match-008",
@@ -69,8 +99,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.227Z"
     },
     {
       "matchId": "match-009",
@@ -87,8 +123,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-011",
@@ -96,8 +138,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-012",
@@ -105,8 +153,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-013",
@@ -114,8 +168,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-014",
@@ -123,8 +183,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-015",
@@ -132,8 +198,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-016",
@@ -141,8 +213,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-017",
@@ -150,8 +228,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-018",
@@ -159,8 +243,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-019",
@@ -168,8 +258,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-020",
@@ -177,8 +273,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-021",
@@ -195,8 +297,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-023",
@@ -204,8 +312,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-024",
@@ -213,8 +327,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-025",
@@ -222,8 +342,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-026",
@@ -240,8 +366,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-028",
@@ -249,8 +381,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-029",
@@ -267,8 +405,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-031",
@@ -276,8 +420,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-032",
@@ -285,8 +435,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.863Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-033",
@@ -303,8 +459,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-035",
@@ -312,8 +474,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-036",
@@ -330,8 +498,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-038",
@@ -339,8 +513,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-039",
@@ -348,8 +528,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-040",
@@ -357,8 +543,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-041",
@@ -366,8 +558,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-042",
@@ -375,8 +573,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-043",
@@ -384,8 +588,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-044",
@@ -393,8 +603,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-045",
@@ -402,8 +618,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-046",
@@ -411,8 +633,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-047",
@@ -420,8 +648,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.228Z"
     },
     {
       "matchId": "match-048",
@@ -438,8 +672,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-050",
@@ -456,8 +696,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-052",
@@ -465,8 +711,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-053",
@@ -474,8 +726,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-054",
@@ -483,8 +741,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-055",
@@ -501,8 +765,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-057",
@@ -510,8 +780,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-058",
@@ -519,8 +795,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-059",
@@ -528,8 +810,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-060",
@@ -537,8 +825,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-061",
@@ -546,8 +840,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-062",
@@ -555,8 +855,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-063",
@@ -564,8 +870,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-064",
@@ -573,8 +885,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-065",
@@ -582,8 +900,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-066",
@@ -591,8 +915,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-067",
@@ -600,8 +930,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-068",
@@ -609,8 +945,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-069",
@@ -618,8 +960,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-070",
@@ -636,8 +984,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-072",
@@ -645,8 +999,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.864Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-073",
@@ -663,8 +1023,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-075",
@@ -681,8 +1047,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-077",
@@ -708,8 +1080,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-080",
@@ -735,8 +1113,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-083",
@@ -762,8 +1146,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-086",
@@ -789,8 +1179,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-089",
@@ -816,8 +1212,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-092",
@@ -834,8 +1236,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-094",
@@ -852,8 +1260,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-096",
@@ -870,8 +1284,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-098",
@@ -879,8 +1299,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-099",
@@ -888,8 +1314,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-100",
@@ -906,8 +1338,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.229Z"
     },
     {
       "matchId": "match-102",
@@ -915,8 +1353,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.230Z"
     },
     {
       "matchId": "match-103",
@@ -924,8 +1368,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.230Z"
     },
     {
       "matchId": "match-104",
@@ -933,8 +1383,14 @@
       "homeScore": null,
       "awayScore": null,
       "winner": null,
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": null,
       "source": "football-data.org",
-      "updatedAtUtc": "2026-04-08T20:59:45.865Z"
+      "updatedAtUtc": "2026-04-13T22:33:14.230Z"
     }
   ]
 }

@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - 'data/picks/**'
       - 'data/results.json'
       - 'data/overrides.json'
   workflow_dispatch:
@@ -28,8 +27,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validate and recalculate
-        run: npm run validate && npm run score
+      - name: Validate, recalculate and build
+        run: npm run build
 
       - name: Commit leaderboard if changed
         run: |

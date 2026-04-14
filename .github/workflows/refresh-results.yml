@@ -30,8 +30,8 @@ jobs:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
         run: node scripts/ingest-results.js
 
-      - name: Recalculate leaderboard
-        run: npm run validate && npm run score
+      - name: Recalculate and build
+        run: npm run build
 
       - name: Commit changes if any
         run: |

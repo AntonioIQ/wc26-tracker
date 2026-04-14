@@ -281,5 +281,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .ctx-spinner{width:24px;height:24px;border:3px solid var(--wc-border);border-top-color:var(--wc-gold);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 0.5rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* PROFILE EDITOR */
+.profile-editor{background:var(--wc-card);border-radius:var(--r);padding:0.8rem;margin-bottom:0.75rem;box-shadow:var(--shadow);border-left:3px solid var(--wc-gold)}
+.profile-row{display:flex;align-items:center;gap:0.7rem}
+.profile-avatar-btn{width:52px;height:52px;border-radius:50%;border:2px solid var(--wc-gold);background:var(--wc-card2);font-size:1.8rem;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.profile-avatar-btn:hover{transform:scale(1.1);box-shadow:0 0 12px rgba(212,168,67,0.3)}
+.profile-fields{display:flex;flex-direction:column;gap:0.35rem;flex:1;min-width:0}
+.profile-input{background:var(--wc-input);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.45rem 0.6rem;color:var(--wc-text);font-size:0.85rem;font-weight:600;outline:none;transition:border-color 0.15s}
+.profile-input:focus{border-color:var(--wc-gold);box-shadow:0 0 0 2px rgba(212,168,67,0.2)}
+.profile-input.profile-tagline{font-weight:400;font-size:0.78rem;color:var(--wc-muted);font-style:italic}
+.profile-input.profile-tagline:focus{color:var(--wc-text)}
+.avatar-picker{display:flex;flex-wrap:wrap;gap:0.3rem;padding:0.6rem 0;justify-content:center}
+.avatar-option{width:40px;height:40px;border-radius:50%;border:2px solid transparent;background:var(--wc-card2);font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.12s}
+.avatar-option:hover{border-color:var(--wc-gold);transform:scale(1.15)}
+.avatar-option.selected{border-color:var(--wc-gold);background:rgba(212,168,67,0.15);box-shadow:0 0 8px rgba(212,168,67,0.3)}
+
+/* LEADERBOARD ENHANCED */
+.lb-avatar{font-size:1.3rem;margin-right:0.3rem}
+.lb-tagline{display:block;font-size:0.68rem;color:var(--wc-muted);font-style:italic;margin-top:0.1rem}
+
+/* RULES MODAL */
+.rules-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:950;opacity:0;pointer-events:none;transition:opacity 0.25s;display:flex;align-items:center;justify-content:center}
+.rules-overlay.open{opacity:1;pointer-events:auto}
+.rules-modal{background:var(--wc-dark);border:1px solid var(--wc-border);border-radius:var(--r);max-width:520px;width:90vw;max-height:80vh;overflow-y:auto;padding:1.5rem;box-shadow:var(--shadow-lg);position:relative}
+.rules-modal h2{font-size:1.1rem;color:var(--wc-gold);margin-bottom:1rem;text-align:center}
+.rules-modal h3{font-size:0.85rem;color:var(--wc-blue);margin:1rem 0 0.4rem;padding-top:0.6rem;border-top:1px solid var(--wc-border)}
+.rules-modal h3:first-of-type{border-top:none;padding-top:0}
+.rules-modal p,.rules-modal li{font-size:0.8rem;color:var(--wc-text);line-height:1.6}
+.rules-modal ul{padding-left:1.2rem;margin:0.3rem 0}
+.rules-modal li{margin-bottom:0.2rem}
+.rules-close{position:absolute;top:0.75rem;right:0.75rem;background:none;border:none;color:var(--wc-muted);font-size:1.3rem;cursor:pointer;padding:0 0.3rem;line-height:1}
+.rules-close:hover{color:var(--wc-red)}
+.rules-link{background:none;border:none;color:var(--wc-gold);font-size:0.75rem;cursor:pointer;padding:0.2rem 0.5rem;text-decoration:underline;font-weight:600}
+.rules-link:hover{color:var(--wc-text)}
+
 /* MATCH CARD CLICKABLE */
 .match-card{cursor:pointer}

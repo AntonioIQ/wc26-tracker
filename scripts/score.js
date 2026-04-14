@@ -69,7 +69,15 @@ function buildLeaderboard() {
   const matchesData = readJson("matches.json");
   const matchMap = new Map((matchesData.matches || []).map((m) => [m.id, m]));
   const results = readJson("results.json").results || [];
+  const overrides = readJson("overrides.json");
+  const overrideMap = new Map(
+    (overrides.results || []).map((r) => [r.matchId, r])
+  );
+  // Merge: overrides tienen prioridad sobre results
   const resultMap = new Map(results.map((result) => [result.matchId, result]));
+  for (const [matchId, override] of overrideMap) {
+    resultMap.set(matchId, override);
+  }
   const picksDir = path.join(dataDir, "picks");
   const pickFiles = fs.readdirSync(picksDir).filter((file) => file.endsWith(".json"));
 
@@ -87,6 +95,8 @@ function buildLeaderboard() {
     return {
       userId: content.userId,
       displayName: content.displayName,
+      avatar: content.avatar || "",
+      tagline: content.tagline || "",
       totalPoints
     };
   });

@@ -18,6 +18,8 @@ const FLAGS={"Mexico":"🇲🇽","South Africa":"🇿🇦","South Korea":"🇰�
 const STAGES={"group":"Fase de Grupos","round-of-32":"Treintaidosavos","round-of-16":"Octavos","quarterfinal":"Cuartos","semifinal":"Semifinal","third-place":"3er Lugar","final":"Final"};
 const STAGE_BADGE={"group":"badge-group","round-of-32":"badge-r32","round-of-16":"badge-r16","quarterfinal":"badge-qf","semifinal":"badge-sf","third-place":"badge-final","final":"badge-final"};
 const STORAGE_KEY="quiniela-wc26-draft";
+const PROFILE_KEY="quiniela-wc26-profile";
+const AVATAR_OPTIONS=["⚽","🦁","🐯","🦅","🐉","🔥","⭐","💎","🎯","🏆","👑","🎩","🤖","🦈","🐺","🦂","🐢","🦉","🎪","🚀","🌮","🍕","🎸","🎲","💀","🧠","🦾","🫡"];
 let currentUser=null, allMatches=[], venuesData=[];
 
 /* WEATHER */
@@ -135,7 +137,8 @@ function renderPodium(lb,matches){
 
   container.innerHTML=order.map((e,i)=>{
     const idx=orderIdx[i];
-    return `<div class="podium-card ${medals[idx]}"><span class="podium-medal">${icons[idx]}</span><span class="podium-name">${e.displayName}</span><span class="podium-pts">${e.totalPoints} pts</span></div>`;
+    const av=e.avatar||"⚽";
+    return `<div class="podium-card ${medals[idx]}"><span class="podium-medal">${icons[idx]}</span><span style="font-size:1.5rem">${av}</span><span class="podium-name">${e.displayName}</span><span class="podium-pts">${e.totalPoints} pts</span></div>`;
   }).join("");
 }
 
@@ -334,7 +337,9 @@ function renderLeaderboard(entries,gen){
   if(!entries.length){body.innerHTML=`<tr><td colspan="3" class="empty-state">Sin participantes</td></tr>`;return}
   body.innerHTML=entries.map((e,i)=>{
     const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1;
-    return `<tr><td class="rank-cell">${medal}</td><td>${e.displayName}<span class="player-id-cell"> · ${e.userId}</span></td><td class="points-cell">${e.totalPoints}</td></tr>`;
+    const av=e.avatar?`<span class="lb-avatar">${e.avatar}</span>`:"";
+    const tag=e.tagline?`<span class="lb-tagline">${e.tagline}</span>`:"";
+    return `<tr><td class="rank-cell">${medal}</td><td>${av}${e.displayName}${tag}</td><td class="points-cell">${e.totalPoints}</td></tr>`;
   }).join("");
   document.getElementById("leaderboard-updated").textContent=gen?`Actualizado: ${fmtDate(gen)}`:"";
 }
@@ -394,9 +399,24 @@ function collectPicks(matches){
   });
 }
 
+function getStableUserId(){
+  // Prefer Netlify Identity sub (stable), fallback to slugified email
+  return currentUser?.id||slugify(currentUser?.email)||"anon";
+}
+
+function getProfile(){
+  try{const raw=localStorage.getItem(PROFILE_KEY);return raw?JSON.parse(raw):{}}catch(e){return{}}
+}
+
+function saveProfile(profile){
+  localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));
+}
+
 function buildPickPayload(matches){
-  const email=currentUser?.email||"anon",name=currentUser?.user_metadata?.full_name||email.split("@")[0];
-  return{userId:slugify(name)||slugify(email),displayName:name,email,submittedAtUtc:new Date().toISOString(),picks:collectPicks(matches)};
+  const profile=getProfile();
+  const email=currentUser?.email||"anon";
+  const defaultName=currentUser?.user_metadata?.full_name||email.split("@")[0];
+  return{userId:getStableUserId(),displayName:profile.displayName||defaultName,avatar:profile.avatar||"⚽",tagline:profile.tagline||"",email,submittedAtUtc:new Date().toISOString(),picks:collectPicks(matches)};
 }
 
 function setStatus(msg,err){const el=document.getElementById("form-status");el.textContent=msg;el.className=err?"form-status error":"form-status"}
@@ -418,8 +438,7 @@ function loadDraft(matches){
 
 async function syncPicksFromRepo(matches){
   if(!currentUser)return;
-  const email=currentUser?.email||"",name=currentUser?.user_metadata?.full_name||email.split("@")[0];
-  const userId=slugify(name)||slugify(email);
+  const userId=getStableUserId();
   if(!userId)return;
   try{
     const url=`${GH_RAW}/picks/${userId}.json`;
@@ -445,6 +464,39 @@ async function syncPicksFromRepo(matches){
   }catch(e){/* fallback to localStorage, already loaded */}
 }
 
+function initProfileEditor(){
+  const profile=getProfile();
+  const nameInput=document.getElementById("profile-name");
+  const taglineInput=document.getElementById("profile-tagline");
+  const avatarBtn=document.getElementById("btn-avatar");
+  const picker=document.getElementById("avatar-picker");
+
+  // Set defaults
+  const defaultName=currentUser?.user_metadata?.full_name||currentUser?.email?.split("@")[0]||"";
+  nameInput.value=profile.displayName||defaultName;
+  taglineInput.value=profile.tagline||"";
+  avatarBtn.textContent=profile.avatar||"⚽";
+
+  // Render avatar picker
+  picker.innerHTML=AVATAR_OPTIONS.map(a=>`<button class="avatar-option ${a===(profile.avatar||"⚽")?"selected":""}" data-av="${a}">${a}</button>`).join("");
+
+  avatarBtn.addEventListener("click",()=>{picker.style.display=picker.style.display==="none"?"flex":"none"});
+
+  picker.addEventListener("click",(e)=>{
+    const btn=e.target.closest("[data-av]");
+    if(!btn)return;
+    const av=btn.dataset.av;
+    avatarBtn.textContent=av;
+    picker.querySelectorAll(".avatar-option").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+    const p=getProfile();p.avatar=av;saveProfile(p);
+    picker.style.display="none";
+  });
+
+  nameInput.addEventListener("change",()=>{const p=getProfile();p.displayName=nameInput.value.trim()||defaultName;saveProfile(p)});
+  taglineInput.addEventListener("change",()=>{const p=getProfile();p.tagline=taglineInput.value.trim();saveProfile(p)});
+}
+
 function downloadJson(fn,d){const b=new Blob([JSON.stringify(d,null,2)+"\n"],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u)}
 
 /* MERGE */
@@ -465,6 +517,7 @@ async function boot(){
     renderVenues(vd.venues||[]);
     renderLeaderboard(ld.entries||[],ld.generatedAtUtc);
     renderPickEditor(allMatches);
+    initProfileEditor();
     loadDraft(allMatches);
     syncPicksFromRepo(allMatches);
     updatePickSummary(allMatches);
@@ -611,6 +664,16 @@ async function loadCtxCommentary(match){
   }
 }
 
+function initRulesModal(){
+  const overlay=document.getElementById("rules-overlay");
+  const closeBtn=document.getElementById("rules-close");
+  const openBtn=document.getElementById("btn-rules");
+  openBtn.addEventListener("click",()=>overlay.classList.add("open"));
+  closeBtn.addEventListener("click",()=>overlay.classList.remove("open"));
+  overlay.addEventListener("click",(e)=>{if(e.target===overlay)overlay.classList.remove("open")});
+}
+
+initRulesModal();
 initContextDrawer();
 initTabs();
 initAuth();
