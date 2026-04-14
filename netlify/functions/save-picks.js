@@ -36,9 +36,19 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: "Configuracion de servidor incompleta" };
   }
 
-  // Verify Netlify Identity token via clientContext
-  const user = event.clientContext?.user;
+  // Verify Netlify Identity token
+  // Try clientContext first (Netlify-managed), fallback to Authorization header
+  let user = event.clientContext?.user || null;
   if (!user) {
+    const auth = event.headers["authorization"] || "";
+    const token = auth.replace(/^Bearer\s+/i, "");
+    if (token && token.includes(".")) {
+      try {
+        user = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+      } catch { /* invalid token */ }
+    }
+  }
+  if (!user || !(user.sub || user.email)) {
     return { statusCode: 401, body: "No autenticado" };
   }
 
