@@ -70,32 +70,38 @@ exports.handler = async (event) => {
   const filePath = `data/picks/${slug}.json`;
   const content = Buffer.from(JSON.stringify(picks, null, 2) + "\n").toString("base64");
 
-  try {
-    // Check if file exists (to get sha for update)
-    let sha = null;
+  // Retry up to 3 times to handle SHA conflicts (409)
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const existing = await githubApi(`/contents/${filePath}?ref=${BRANCH}`);
-      sha = existing.sha;
-    } catch {
-      // File doesn't exist yet, that's fine
+      let sha = null;
+      try {
+        const existing = await githubApi(`/contents/${filePath}?ref=${BRANCH}`);
+        sha = existing.sha;
+      } catch {
+        // File doesn't exist yet, that's fine
+      }
+
+      await githubApi(`/contents/${filePath}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          message: `picks: ${picks.displayName || slug} [skip netlify]`,
+          content,
+          branch: BRANCH,
+          ...(sha ? { sha } : {})
+        })
+      });
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ ok: true, file: filePath })
+      };
+    } catch (err) {
+      // Retry on 409 SHA conflict
+      if (err.message.includes("409") && attempt < 2) {
+        continue;
+      }
+      console.error("Error committing picks:", err);
+      return { statusCode: 500, body: `Error guardando: ${err.message}` };
     }
-
-    await githubApi(`/contents/${filePath}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        message: `picks: ${picks.displayName || slug} [skip netlify]`,
-        content,
-        branch: BRANCH,
-        ...(sha ? { sha } : {})
-      })
-    });
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ ok: true, file: filePath })
-    };
-  } catch (err) {
-    console.error("Error committing picks:", err);
-    return { statusCode: 500, body: `Error guardando: ${err.message}` };
   }
 };
