@@ -401,8 +401,16 @@ function collectPicks(matches){
 }
 
 function getStableUserId(){
-  // Prefer Netlify Identity sub (stable), fallback to slugified email
-  return currentUser?.id||slugify(currentUser?.email)||"anon";
+  // Use saved userId from profile if available (preserves existing picks file)
+  // Fallback: slugify name or email (same logic as before the UUID change)
+  const profile=getProfile();
+  if(profile.userId)return profile.userId;
+  const email=currentUser?.email||"";
+  const name=currentUser?.user_metadata?.full_name||email.split("@")[0];
+  const id=slugify(name)||slugify(email)||"anon";
+  // Persist so it stays stable even if name changes
+  profile.userId=id;saveProfile(profile);
+  return id;
 }
 
 function getProfile(){
