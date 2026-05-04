@@ -1,8 +1,10 @@
 {
   "userId": "jacob",
   "displayName": "Jacob",
+  "avatar": "⚽",
+  "tagline": "",
   "email": "jacher7@gmail.com",
-  "submittedAtUtc": "2026-04-12T16:37:33.948Z",
+  "submittedAtUtc": "2026-05-04T15:32:00.762Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -11,13 +13,13 @@
     },
     {
       "matchId": "match-002",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 1
     },
     {
       "matchId": "match-003",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-004",
@@ -31,8 +33,8 @@
     },
     {
       "matchId": "match-006",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 3
     },
     {
       "matchId": "match-007",
