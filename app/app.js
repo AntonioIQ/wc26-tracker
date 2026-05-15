@@ -220,6 +220,7 @@ function showAuth() {
 function showApp() {
   $("#auth-screen").style.display = "none";
   $("#app-main").style.display = "flex";
+  $("#global-loading").classList.remove("hide");
   $("#user-display").textContent = (getProfile().displayName || state.currentUser?.user_metadata?.full_name || state.currentUser?.email || "Tú");
   boot();
 }
@@ -234,8 +235,8 @@ function getStableUserId() {
   const profile = getProfile();
   if (profile.userId) return profile.userId;
   const email = state.currentUser?.email || "";
-  const name = state.currentUser?.user_metadata?.full_name || email.split("@")[0];
-  const id = slugify(name) || slugify(email) || "anon";
+  // Use email prefix as primary ID source (matches existing pick filenames)
+  const id = slugify(email.split("@")[0]) || slugify(state.currentUser?.user_metadata?.full_name) || "anon";
   profile.userId = id; saveProfile(profile);
   return id;
 }

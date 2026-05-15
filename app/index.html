@@ -47,6 +47,8 @@
       background:
         radial-gradient(ellipse 600px 400px at 50% 30%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 70%),
         var(--bg-base);
+      position: relative;
+      z-index: 100;
     }
     .auth-logo { width: 140px; height: 140px; filter: drop-shadow(0 8px 24px color-mix(in oklab, var(--accent) 40%, transparent)); }
     .auth-title {
@@ -283,7 +285,7 @@
 <body>
   <div class="app-shell">
     <!-- AUTH SCREEN -->
-    <div class="auth-screen" id="auth-screen" style="display:none">
+    <div class="auth-screen" id="auth-screen">
       <img class="auth-logo" src="./wc2026-logo.png" alt="FIFA World Cup 2026" />
       <h1 class="auth-title">Quiniela <span>26</span></h1>
       <p class="auth-sub">Inicia sesión para participar en la quiniela del Mundial</p>
@@ -294,7 +296,7 @@
     </div>
 
     <!-- MAIN APP -->
-    <div id="app-main" style="display:none; flex:1; min-height:0; display:flex; flex-direction:column;">
+    <div id="app-main" style="display:none; flex:1; min-height:0; flex-direction:column;">
       <!-- HEADER -->
       <div class="app-header">
         <div class="brand">
@@ -431,7 +433,7 @@
     </div>
 
     <!-- LOADING -->
-    <div class="global-loading" id="global-loading">
+    <div class="global-loading hide" id="global-loading">
       <div class="gl-inner">
         <img class="gl-logo" src="./wc2026-logo.png" alt="" />
         <div class="gl-text">Cargando Quiniela 26</div>
