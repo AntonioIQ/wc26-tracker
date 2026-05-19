@@ -26,6 +26,7 @@ jobs:
           node-version: 22
 
       - name: Ingest results from API
+        continue-on-error: true
         env:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
         run: node scripts/ingest-results.js

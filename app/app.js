@@ -164,15 +164,19 @@ function escapeHTML(s) {
 }
 
 // ────────────────── DATA FETCH ──────────────────
+// Cache-busting: GitHub Raw CDN cachea 5 min y Safari iOS ignora "no-store".
+// Agregar ?t=timestamp obliga a leer la última versión.
+function bust(url) { return url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(); }
+
 async function fetchJson(url) {
   try {
-    const r = await fetch(url, { cache: "no-store" });
+    const r = await fetch(bust(url), { cache: "no-store" });
     if (!r.ok) throw new Error(`Error ${r.status} ${url}`);
     return r.json();
   } catch (e) {
     const key = Object.keys(DATA_URLS).find(k => DATA_URLS[k] === url);
     if (key && DATA_LOCAL[key]) {
-      const r2 = await fetch(DATA_LOCAL[key], { cache: "no-store" });
+      const r2 = await fetch(bust(DATA_LOCAL[key]), { cache: "no-store" });
       if (!r2.ok) throw new Error(`Error ${DATA_LOCAL[key]}`);
       return r2.json();
     }

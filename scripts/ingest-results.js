@@ -41,8 +41,8 @@ const COMPETITION = "WC";
 const TOKEN = process.env.FOOTBALL_DATA_TOKEN || "";
 
 if (!TOKEN) {
-  console.error("Falta FOOTBALL_DATA_TOKEN. Abortando sin cambios.");
-  process.exit(1);
+  console.warn("Falta FOOTBALL_DATA_TOKEN. Saltando ingest API (los overrides manuales siguen aplicandose).");
+  process.exit(0);
 }
 
 function readJson(relativePath) {
