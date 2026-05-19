@@ -9,6 +9,13 @@ on:
 permissions:
   contents: write
 
+# Solo 1 workflow corriendo a la vez. Si dispatch nuevo llega mientras
+# está corriendo (ej. admin guarda 2 veces o cron coincide con save), se
+# encola y espera. Previene race conditions al pushear leaderboard.json.
+concurrency:
+  group: refresh-results
+  cancel-in-progress: false
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -41,7 +48,19 @@ jobs:
           git add -A
           if git diff --cached --quiet; then
             echo "Sin cambios"
-          else
-            git commit -m "auto: actualizar resultados"
-            git push
+            exit 0
           fi
+          git commit -m "auto: actualizar resultados"
+
+          # Retry con rebase para manejar race conditions entre workflows
+          # (admin guarda 2 veces rápido o cron + admin al mismo tiempo)
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Push OK en intento $attempt"
+              exit 0
+            fi
+            echo "Push falló (intento $attempt) — rebasing..."
+            git pull --rebase origin main
+          done
+          echo "Push falló después de 5 intentos"
+          exit 1
