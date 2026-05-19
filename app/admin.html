@@ -458,9 +458,11 @@
       </svg>
     </div>
     <h2>Acceso restringido</h2>
-    <p>Solo el organizador puede ingresar resultados manualmente.</p>
-    <label class="gate-label" for="pwd">Contraseña</label>
-    <input type="password" id="pwd" class="gate-input" placeholder="••••••••" autocomplete="current-password">
+    <p>Solo el organizador puede ingresar resultados manualmente. Usa el token único de admin.</p>
+    <label class="gate-label" for="pwd">Token de acceso</label>
+    <input type="password" id="pwd" class="gate-input" placeholder="Pega tu token"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+      data-form-type="other" data-lpignore="true" data-1p-ignore name="admin-token">
     <button class="btn-primary" id="btn-enter">Entrar</button>
     <div class="gate-err" id="gate-err"></div>
   </div>
