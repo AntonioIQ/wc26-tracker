@@ -52,15 +52,25 @@ jobs:
           fi
           git commit -m "auto: actualizar resultados"
 
-          # Retry con rebase para manejar race conditions entre workflows
-          # (admin guarda 2 veces rápido o cron + admin al mismo tiempo)
+          # Retry: si el push falla (otro proceso pusheó mientras corríamos),
+          # descartamos local, sincronizamos con remote, y regeneramos el
+          # leaderboard con los datos más recientes. No hacemos rebase porque
+          # leaderboard.json siempre da merge conflicts (es regenerado).
           for attempt in 1 2 3 4 5; do
             if git push; then
               echo "Push OK en intento $attempt"
               exit 0
             fi
-            echo "Push falló (intento $attempt) — rebasing..."
-            git pull --rebase origin main
+            echo "Push falló (intento $attempt). Resyncing y regenerando leaderboard..."
+            git fetch origin main
+            git reset --hard origin/main
+            npm run build
+            git add -A
+            if git diff --cached --quiet; then
+              echo "Sin cambios después de resync (otro workflow ya aplicó)"
+              exit 0
+            fi
+            git commit -m "auto: actualizar resultados (resync $attempt)"
           done
           echo "Push falló después de 5 intentos"
           exit 1
