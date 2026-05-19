@@ -1,14 +1,5 @@
 {
-  "results": [
-    {
-      "matchId": "match-001",
-      "status": "finished",
-      "homeScore": 1,
-      "awayScore": 1,
-      "source": "manual",
-      "updatedAtUtc": "2026-05-19T18:01:33.217Z"
-    }
-  ],
+  "results": [],
   "notes": [
     "Este archivo tiene prioridad sobre cualquier actualizacion automatizada."
   ]
