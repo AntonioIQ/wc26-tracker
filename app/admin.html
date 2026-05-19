@@ -276,7 +276,16 @@
       left: -1px; top: 8px; bottom: 8px;
       width: 3px; background: var(--ink); border-radius: 2px;
     }
-    .mrow.finished { background: var(--bg-soft); }
+    .mrow.has-override:not(.dirty)::before {
+      content: ""; position: absolute;
+      left: -1px; top: 8px; bottom: 8px;
+      width: 3px; background: var(--accent); border-radius: 2px;
+    }
+    .mrow.has-override:not(.dirty) {
+      border-color: var(--accent-border);
+      background: var(--accent-soft);
+    }
+    .mrow.finished:not(.has-override):not(.dirty) { background: var(--bg-soft); }
 
     .mtime {
       font-family: var(--mono); font-size: 10.5px;
@@ -541,7 +550,9 @@ async function loadData() {
 
     updateCounters();
     render();
-    setStatus(`${matches.length} partidos · ${countFinished()} con resultado registrado`);
+    const ovCount = matches.filter(hasOverride).length;
+    const ovMsg = ovCount > 0 ? ` · ${ovCount} con override manual` : "";
+    setStatus(`${matches.length} partidos · ${countFinished()} con marcador${ovMsg}`);
   } catch (e) {
     setStatus("Error al cargar datos: " + e.message, "err");
   }
@@ -578,10 +589,17 @@ function fmtTime(iso) {
 }
 function dayKey(iso) { return new Date(iso).toLocaleDateString("en-CA", { timeZone:"America/Mexico_City" }); }
 
-function isFinished(m) {
+function hasResult(m) {
+  // Tiene marcador si hay override con scores O hay result de la API
   const api = apiResults[m.id];
   const ov  = overrides[m.id];
-  return (api && api.status === "finished") || (ov && ov.status === "finished");
+  const apiHas = api && api.homeScore != null && api.awayScore != null;
+  const ovHas  = ov  && ov.homeScore  != null && ov.awayScore  != null;
+  return Boolean(apiHas || ovHas);
+}
+function hasOverride(m) {
+  const ov = overrides[m.id];
+  return Boolean(ov && ov.homeScore != null && ov.awayScore != null);
 }
 
 function isDirty(id) {
@@ -596,8 +614,8 @@ function hasBothScores(id) {
 }
 
 function dirtyCount() { return matches.filter(m => isDirty(m.id)).length; }
-function countFinished() { return matches.filter(isFinished).length; }
-function countPending()  { return matches.filter(m => !isFinished(m)).length; }
+function countFinished() { return matches.filter(hasResult).length; }
+function countPending()  { return matches.filter(m => !hasResult(m)).length; }
 
 function updateCounters() {
   document.getElementById("ct-pending").textContent  = countPending();
@@ -606,8 +624,8 @@ function updateCounters() {
 }
 
 function filter_fn(m) {
-  if (filter === "pending")  return !isFinished(m);
-  if (filter === "finished") return isFinished(m);
+  if (filter === "pending")  return !hasResult(m);
+  if (filter === "finished") return hasResult(m);
   return true;
 }
 
@@ -666,7 +684,8 @@ function render() {
 function rowHTML(m) {
   const cur = inputs[m.id] || {};
   const dirty = isDirty(m.id);
-  const fin = isFinished(m);
+  const fin = hasResult(m);
+  const isOverride = hasOverride(m);
   const hasVal = h => h !== "" && h != null;
 
   const statusOpts = [
@@ -680,7 +699,7 @@ function rowHTML(m) {
   const statusCls = cur.status === "finished" ? "fin" : cur.status === "live" ? "live" : "";
 
   return `
-    <div class="mrow ${dirty ? "dirty" : ""} ${fin ? "finished" : ""}" data-id="${esc(m.id)}">
+    <div class="mrow ${dirty ? "dirty" : ""} ${fin ? "finished" : ""} ${isOverride ? "has-override" : ""}" data-id="${esc(m.id)}">
       <div class="mtime">
         <span class="stg">${esc(stageLabel(m))}</span>
         <span class="t">${fmtTime(m.kickoffUtc)}</span>
@@ -717,6 +736,19 @@ function onInput(e) {
   if (!inputs[id]) inputs[id] = {};
   inputs[id][side === "home" ? "home" : "away"] = v;
   e.target.classList.toggle("v", v !== "");
+
+  // Auto-cambiar status a "finished" cuando ambos scores estén llenos
+  // (solo si está en "scheduled"; respeta postponed/suspended/live si ya los pusiste manualmente)
+  const cur = inputs[id];
+  if (cur.home !== "" && cur.away !== "" && cur.status === "scheduled") {
+    cur.status = "finished";
+    const sel = document.querySelector(`.mstatus[data-id="${id}"]`);
+    if (sel) {
+      sel.value = "finished";
+      sel.className = "mstatus fin";
+    }
+  }
+
   markRowDirty(id);
   updateSaveBtn();
 }
