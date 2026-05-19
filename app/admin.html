@@ -505,13 +505,17 @@ document.getElementById("btn-enter").addEventListener("click", async () => {
 });
 
 // ── Data loading ──
+// Lee desde GitHub Raw (fuente de verdad) con fallback a local de Netlify.
+// Netlify no se redeploya en cada commit, pero GitHub Raw siempre tiene lo último.
+const GH_RAW = "https://raw.githubusercontent.com/AntonioIQ/wc26-tracker/main/data";
+
 async function loadData() {
   setStatus("Cargando datos…", "busy");
   try {
     const [md, rd, od] = await Promise.all([
-      fetchJson("./data/matches.json"),
-      fetchJson("./data/results.json"),
-      fetchJson("./data/overrides.json"),
+      fetchWithFallback("matches.json"),
+      fetchWithFallback("results.json"),
+      fetchWithFallback("overrides.json"),
     ]);
 
     matches = md.matches || [];
@@ -544,9 +548,17 @@ async function loadData() {
 }
 
 async function fetchJson(url) {
-  const r = await fetch(url + "?t=" + Date.now());
+  const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now());
   if (!r.ok) throw new Error(`HTTP ${r.status} — ${url}`);
   return r.json();
+}
+
+async function fetchWithFallback(file) {
+  try {
+    return await fetchJson(`${GH_RAW}/${file}`);
+  } catch {
+    return await fetchJson(`./data/${file}`);
+  }
 }
 
 // ── Constants ──
