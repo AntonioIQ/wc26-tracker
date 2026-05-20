@@ -1047,7 +1047,35 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-style: italic;
+  animation: tagPulse 3.5s ease-in-out infinite;
 }
+
+/* Tagline del podio (top 3) */
+.lb-pod .pod-tag {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  font-style: italic;
+  letter-spacing: -0.005em;
+  margin: -2px 4px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  animation: tagPulse 3.5s ease-in-out infinite;
+}
+
+/* Pulse sutil: opacidad cíclica para que el mensaje "respire" */
+@keyframes tagPulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.9; }
+}
+
+/* Escalonar el pulse para que no parpadeen todos al unísono */
+.lb-row:nth-child(3n)   .tag { animation-delay: 0.7s; }
+.lb-row:nth-child(3n+1) .tag { animation-delay: 1.4s; }
+.lb-pod.silver  .pod-tag { animation-delay: 0.7s; }
+.lb-pod.bronze  .pod-tag { animation-delay: 1.4s; }
 .lb-row .streak {
   font-family: var(--font-mono);
   font-size: 9.5px;

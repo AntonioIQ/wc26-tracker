@@ -618,6 +618,7 @@ function renderTabla() {
       <div class="medal">#${rank}</div>
       <div class="pod-avatar">${p.avatar?.startsWith("data:") ? `<img src="${escapeHTML(p.avatar)}" alt="">` : `<span>${p.avatar || "⚽"}</span>`}</div>
       <div class="pod-name">${escapeHTML(p.displayName)}</div>
+      ${p.tagline ? `<div class="pod-tag">${escapeHTML(p.tagline)}</div>` : ""}
       <div class="pod-pts">${p.totalPoints || 0}<span class="lbl">PTS</span></div>
     </div>` : `<div></div>`;
 
