@@ -4,3 +4,21 @@
 
 [functions]
   directory = "netlify/functions"
+
+# Cache headers estrictos para evitar que Safari iOS sirva versiones viejas
+# después de un deploy. "no-store" es más fuerte que "must-revalidate" y
+# Safari lo respeta. Aplica a HTML, JS y CSS críticos.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, no-store, max-age=0"
+
+[[headers]]
+  for = "/app.js"
+  [headers.values]
+    Cache-Control = "public, no-store, max-age=0"
+
+[[headers]]
+  for = "/styles.css"
+  [headers.values]
+    Cache-Control = "public, no-store, max-age=0"
