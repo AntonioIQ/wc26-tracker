@@ -91,6 +91,18 @@ exports.handler = async (event) => {
         })
       });
 
+      // Disparar workflow para recalcular leaderboard (incluye perfil actualizado).
+      // El concurrency group del workflow encola en caso de múltiples saves seguidos.
+      try {
+        await githubApi(`/actions/workflows/refresh-results.yml/dispatches`, {
+          method: "POST",
+          body: JSON.stringify({ ref: BRANCH })
+        });
+      } catch (e) {
+        // No crítico: el commit ya se hizo, el siguiente cron recalculará
+        console.warn("No se pudo disparar el workflow:", e.message);
+      }
+
       return {
         statusCode: 200,
         body: JSON.stringify({ ok: true, file: filePath })

@@ -1125,14 +1125,17 @@ function initAccountPanel() {
     e.target.value = "";
   });
 
-  $("#btn-save-profile").addEventListener("click", () => {
+  $("#btn-save-profile").addEventListener("click", async () => {
     const p = getProfile();
     p.displayName = $("#profile-name").value.trim() || defaultName;
     p.tagline = $("#profile-tagline").value.trim();
     saveProfile(p);
     $("#user-display").textContent = p.displayName;
-    setProfileStatus("✓ Perfil guardado");
-    setTimeout(() => setProfileStatus(""), 2000);
+    setProfileStatus("Sincronizando…");
+    // Llamar savePicks para mandar el perfil al servidor (va en el payload)
+    await savePicks();
+    setProfileStatus("✓ Perfil guardado en el servidor");
+    setTimeout(() => setProfileStatus(""), 2500);
   });
 }
 
