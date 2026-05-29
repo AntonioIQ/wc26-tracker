@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-05-29T23:00:42.678Z",
+  "generatedAtUtc": "2026-05-29T23:47:57.408Z",
   "entries": [
     {
       "userId": "antapia3003",
@@ -40,6 +40,13 @@
       "userId": "juliocesarfariasreyes",
       "displayName": "juliocesarfariasreyes",
       "avatar": "",
+      "tagline": "",
+      "totalPoints": 0
+    },
+    {
+      "userId": "luisgeugalde",
+      "displayName": "Luis",
+      "avatar": "⚽",
       "tagline": "",
       "totalPoints": 0
     }
