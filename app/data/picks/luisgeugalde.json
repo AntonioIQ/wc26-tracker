@@ -4,7 +4,7 @@
   "avatar": "🔥",
   "tagline": "El nene",
   "email": "luisgeugalde@gmail.com",
-  "submittedAtUtc": "2026-05-30T01:59:49.240Z",
+  "submittedAtUtc": "2026-05-30T02:03:50.192Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -53,7 +53,7 @@
     },
     {
       "matchId": "match-010",
-      "homeScore": 0,
+      "homeScore": 2,
       "awayScore": 1
     },
     {
