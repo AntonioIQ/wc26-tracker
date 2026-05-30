@@ -4,7 +4,7 @@
   "avatar": "🔥",
   "tagline": "El nene",
   "email": "luisgeugalde@gmail.com",
-  "submittedAtUtc": "2026-05-30T01:16:36.657Z",
+  "submittedAtUtc": "2026-05-30T01:17:44.407Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -339,32 +339,32 @@
     {
       "matchId": "match-067",
       "homeScore": 0,
-      "awayScore": null
+      "awayScore": 3
     },
     {
       "matchId": "match-068",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 2
     },
     {
       "matchId": "match-069",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 3
     },
     {
       "matchId": "match-070",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 0
     },
     {
       "matchId": "match-071",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-072",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 4
     },
     {
       "matchId": "match-073",
