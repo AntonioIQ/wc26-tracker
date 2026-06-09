@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-06-09T10:25:12.533Z",
+  "generatedAtUtc": "2026-06-09T19:42:56.447Z",
   "entries": [
     {
       "userId": "antapia3003",
@@ -48,6 +48,13 @@
       "displayName": "Luis",
       "avatar": "🔥",
       "tagline": "El nene",
+      "totalPoints": 0
+    },
+    {
+      "userId": "raindarkarcher",
+      "displayName": "Arnold",
+      "avatar": "⚽",
+      "tagline": "",
       "totalPoints": 0
     }
   ]
