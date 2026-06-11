@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "laliz118b@yahoo.com.mx",
-  "submittedAtUtc": "2026-06-11T18:25:34.801Z",
+  "submittedAtUtc": "2026-06-11T18:26:01.407Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -13,8 +13,8 @@
     },
     {
       "matchId": "match-002",
-      "homeScore": 2,
-      "awayScore": 0
+      "homeScore": 3,
+      "awayScore": 2
     },
     {
       "matchId": "match-003",
