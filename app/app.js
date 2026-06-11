@@ -245,6 +245,7 @@ function getStableUserId() {
     "jacher7@gmail.com": "jacob",
     "arcel1989rata@hotmail.com": "arcel",
     "ldrinaldi73@gmail.com": "luisdanielrinaldi",
+    "victorm1608@gmail.com": "guest",
   };
   
   if (LEGACY_MAP[email]) {
