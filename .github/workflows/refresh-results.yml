@@ -2,8 +2,8 @@ name: Refresh Results
 
 on:
   schedule:
-    # Cada 2 horas durante días de partido (10:00-04:00 UTC = 4am-10pm CDMX)
-    - cron: "0 0,2,4,10,12,14,16,18,20,22 * * *"
+    # Cada 30 min en horarios de partido (14:00-06:00 UTC = 8am-12am CDMX)
+    - cron: "0,30 14,15,16,17,18,19,20,21,22,23,0,1,2,3,4,5 * * *"
   workflow_dispatch:
 
 permissions:
