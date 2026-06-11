@@ -239,6 +239,20 @@ function getStableUserId() {
   const profile = getProfile();
   if (profile.userId) return profile.userId;
   const email = state.currentUser?.email || "";
+  
+  // Legacy users whose pick file doesn't match their email prefix
+  const LEGACY_MAP = {
+    "jacher7@gmail.com": "jacob",
+    "arcel1989rata@hotmail.com": "arcel",
+    "ldrinaldi73@gmail.com": "luisdanielrinaldi",
+  };
+  
+  if (LEGACY_MAP[email]) {
+    const id = LEGACY_MAP[email];
+    profile.userId = id; saveProfile(profile);
+    return id;
+  }
+  
   // Use email prefix as primary ID source (matches existing pick filenames)
   const id = slugify(email.split("@")[0]) || slugify(state.currentUser?.user_metadata?.full_name) || "anon";
   profile.userId = id; saveProfile(profile);
