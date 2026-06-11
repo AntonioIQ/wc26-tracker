@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-06-11T03:26:49.240Z",
+  "generatedAtUtc": "2026-06-11T05:33:57.865Z",
   "entries": [
     {
       "userId": "antapia3003",
@@ -32,6 +32,13 @@
     {
       "userId": "geovani3105",
       "displayName": "Daniel",
+      "avatar": "⚽",
+      "tagline": "",
+      "totalPoints": 0
+    },
+    {
+      "userId": "guest",
+      "displayName": "Victor Manuel",
       "avatar": "⚽",
       "tagline": "",
       "totalPoints": 0
