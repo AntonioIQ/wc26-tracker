@@ -1,8 +1,10 @@
 {
   "userId": "juliocesarfariasreyes",
   "displayName": "juliocesarfariasreyes",
+  "avatar": "⚽",
+  "tagline": "",
   "email": "juliocesarfariasreyes@gmail.com",
-  "submittedAtUtc": "2026-04-09T18:16:38.787Z",
+  "submittedAtUtc": "2026-06-11T17:17:24.370Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -16,53 +18,53 @@
     },
     {
       "matchId": "match-003",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-004",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 3,
+      "awayScore": 1
     },
     {
       "matchId": "match-005",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-006",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 2
     },
     {
       "matchId": "match-007",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 3,
+      "awayScore": 2
     },
     {
       "matchId": "match-008",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 2
     },
     {
       "matchId": "match-009",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 5,
+      "awayScore": 0
     },
     {
       "matchId": "match-010",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-011",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 0
     },
     {
       "matchId": "match-012",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 0
     },
     {
       "matchId": "match-013",
