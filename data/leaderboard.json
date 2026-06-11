@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-06-11T23:53:18.071Z",
+  "generatedAtUtc": "2026-06-11T23:56:37.899Z",
   "entries": [
     {
       "userId": "angelofiesco",
@@ -51,13 +51,6 @@
       "totalPoints": 1
     },
     {
-      "userId": "guest",
-      "displayName": "Victor Manuel",
-      "avatar": "⚽",
-      "tagline": "",
-      "totalPoints": 1
-    },
-    {
       "userId": "jacob",
       "displayName": "Jacob",
       "avatar": "⚽",
@@ -88,6 +81,13 @@
     {
       "userId": "raindarkarcher",
       "displayName": "Arnold",
+      "avatar": "⚽",
+      "tagline": "",
+      "totalPoints": 1
+    },
+    {
+      "userId": "victorm1608",
+      "displayName": "Victor Manuel",
       "avatar": "⚽",
       "tagline": "",
       "totalPoints": 1
