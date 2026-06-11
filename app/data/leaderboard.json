@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-06-11T02:48:27.024Z",
+  "generatedAtUtc": "2026-06-11T03:22:04.202Z",
   "entries": [
     {
       "userId": "antapia3003",
@@ -67,6 +67,13 @@
     {
       "userId": "raindarkarcher",
       "displayName": "Arnold",
+      "avatar": "⚽",
+      "tagline": "",
+      "totalPoints": 0
+    },
+    {
+      "userId": "santiagodiego113",
+      "displayName": "Diego",
       "avatar": "⚽",
       "tagline": "",
       "totalPoints": 0
