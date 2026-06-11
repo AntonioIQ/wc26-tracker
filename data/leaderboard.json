@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-06-11T18:36:37.170Z",
+  "generatedAtUtc": "2026-06-11T20:39:13.250Z",
   "entries": [
     {
       "userId": "alan602000",
@@ -53,6 +53,13 @@
     {
       "userId": "guest",
       "displayName": "Victor Manuel",
+      "avatar": "⚽",
+      "tagline": "",
+      "totalPoints": 0
+    },
+    {
+      "userId": "jacher7",
+      "displayName": "Jacob",
       "avatar": "⚽",
       "tagline": "",
       "totalPoints": 0
