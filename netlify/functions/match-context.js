@@ -66,11 +66,7 @@ async function getXpozCommentary(teams) {
       try {
         const parsed = JSON.parse(text);
         posts = (parsed.posts || parsed.results || parsed || [])
-          .filter(p => {
-            const author = (p.author || p.username || p.screen_name || "").toLowerCase();
-            return PERIODISTAS.some(h => author.includes(h.toLowerCase()));
-          })
-          .slice(0, 12)
+          .slice(0, 15)
           .map(p => ({
             text: p.text || p.content || p.full_text || "",
             author: p.author || p.username || p.screen_name || "",
