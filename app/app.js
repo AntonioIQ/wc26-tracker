@@ -1010,6 +1010,43 @@ function renderDrawerTab(m, tab) {
   }
 }
 
+// Normaliza nombres de equipos para emparejar con ESPN.
+// Maneja diferencias como "Bosnia and Herzegovina" vs "Bosnia-Herzegovina",
+// acentos, guiones, "&"/"and" y alias oficiales FIFA (Türkiye, Côte d'Ivoire, etc).
+const TEAM_ALIASES = {
+  turkiye: "turkey",
+  cotedivoire: "ivorycoast",
+  korearepublic: "southkorea", korea: "southkorea",
+  iriran: "iran",
+  congodr: "drcongo",
+  czechrepublic: "czechia",
+  caboverde: "capeverde",
+  unitedstatesofamerica: "unitedstates", usa: "unitedstates",
+};
+function normTeam(s) {
+  const base = (s || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/\band\b/g, " ")
+    .replace(/[^a-z0-9]/g, "");
+  return TEAM_ALIASES[base] || base;
+}
+
+// Busca el evento de ESPN que corresponde al partido (home/away), tolerando
+// nombres distintos y orden invertido de local/visitante.
+function findEspnEvent(events, homeTeam, awayTeam) {
+  const h = normTeam(homeTeam), a = normTeam(awayTeam);
+  const hit = (x, y) => x && y && (x.includes(y) || y.includes(x));
+  return (events || []).find(e => {
+    const c = e.competitions?.[0];
+    if (!c) return false;
+    const eh = normTeam(c.competitors?.find(x => x.homeAway === "home")?.team?.displayName);
+    const ea = normTeam(c.competitors?.find(x => x.homeAway === "away")?.team?.displayName);
+    return (hit(eh, h) && hit(ea, a)) || (hit(eh, a) && hit(ea, h));
+  });
+}
+
 async function callContext(body) {
   const r = await fetch("/.netlify/functions/match-context", {
     method: "POST",
@@ -1025,14 +1062,7 @@ async function loadCtxLive(m) {
   try {
     const sb = await callContext({ action: "scoreboard", league: "fifa.world" });
     const events = sb.events || [];
-    const h = m.homeTeam.toLowerCase(), a = m.awayTeam.toLowerCase();
-    const evt = events.find(e => {
-      const c = e.competitions?.[0];
-      if (!c) return false;
-      const eh = (c.competitors?.find(x => x.homeAway === "home")?.team?.displayName || "").toLowerCase();
-      const ea = (c.competitors?.find(x => x.homeAway === "away")?.team?.displayName || "").toLowerCase();
-      return (eh.includes(h) || h.includes(eh)) && (ea.includes(a) || a.includes(ea));
-    });
+    const evt = findEspnEvent(events, m.homeTeam, m.awayTeam);
     if (!evt) {
       el.innerHTML = `<div class="empty"><div class="icon">📡</div><div class="title">Sin datos en vivo</div><p>ESPN no reporta este partido aún.</p></div>`;
       return;
@@ -1110,14 +1140,7 @@ async function loadCtxLineups(m) {
   try {
     const sb = await callContext({ action: "scoreboard", league: "fifa.world" });
     const events = sb.events || [];
-    const h = m.homeTeam.toLowerCase(), a = m.awayTeam.toLowerCase();
-    const evt = events.find(e => {
-      const c = e.competitions?.[0];
-      if (!c) return false;
-      const eh = (c.competitors?.find(x => x.homeAway === "home")?.team?.displayName || "").toLowerCase();
-      const ea = (c.competitors?.find(x => x.homeAway === "away")?.team?.displayName || "").toLowerCase();
-      return (eh.includes(h) || h.includes(eh)) && (ea.includes(a) || a.includes(ea));
-    });
+    const evt = findEspnEvent(events, m.homeTeam, m.awayTeam);
     if (!evt) { el.innerHTML = `<div class="empty"><div class="icon">👕</div><div class="title">Alineaciones no disponibles</div><p>Se publican poco antes del inicio.</p></div>`; return; }
     const data = await callContext({ action: "summary", league: "fifa.world", eventId: evt.id });
     if (!data.lineups || !data.lineups.length) { el.innerHTML = `<div class="empty"><div class="icon">👕</div><div class="title">Alineaciones aún no confirmadas</div></div>`; return; }

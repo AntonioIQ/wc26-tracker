@@ -25,6 +25,29 @@ async function fetchJson(url) {
   return res.json();
 }
 
+// Normaliza nombres de equipos para emparejar con ESPN
+// ("Bosnia and Herzegovina" vs "Bosnia-Herzegovina", acentos, guiones, "&"/"and",
+// y alias oficiales FIFA: Türkiye, Côte d'Ivoire, Korea Republic, etc).
+const TEAM_ALIASES = {
+  turkiye: "turkey",
+  cotedivoire: "ivorycoast",
+  korearepublic: "southkorea", korea: "southkorea",
+  iriran: "iran",
+  congodr: "drcongo",
+  czechrepublic: "czechia",
+  caboverde: "capeverde",
+  unitedstatesofamerica: "unitedstates", usa: "unitedstates",
+};
+function normTeam(s) {
+  const base = (s || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/\band\b/g, " ")
+    .replace(/[^a-z0-9]/g, "");
+  return TEAM_ALIASES[base] || base;
+}
+
 async function getEspnScoreboard(league) {
   return fetchJson(`${ESPN_BASE}/${league}/scoreboard`);
 }
@@ -141,14 +164,14 @@ exports.handler = async (event) => {
       const league2 = league || "fifa.world";
       const sb = await getEspnScoreboard(league2);
       const events = sb.events || [];
-      // Find event matching teams
-      const t0 = (teams[0] || "").toLowerCase(), t1 = (teams[1] || "").toLowerCase();
+      // Find event matching teams (nombres normalizados, tolera guiones/"and")
+      const t0 = normTeam(teams[0]), t1 = normTeam(teams[1]);
+      const hit = (x, y) => x && y && (x.includes(y) || y.includes(x));
       const evt = events.find(e => {
         const c = e.competitions?.[0];
         if (!c) return false;
-        const names = (c.competitors || []).map(x => (x.team?.displayName || "").toLowerCase());
-        return names.some(n => n.includes(t0) || t0.includes(n)) &&
-               names.some(n => n.includes(t1) || t1.includes(n));
+        const names = (c.competitors || []).map(x => normTeam(x.team?.displayName));
+        return names.some(n => hit(n, t0)) && names.some(n => hit(n, t1));
       });
       if (!evt) return ok({ commentary: [], available: false, reason: "match not found in ESPN" });
       const summary = await getEspnSummary(league2, evt.id);
