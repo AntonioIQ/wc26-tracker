@@ -61,8 +61,8 @@
       "venue": "BC Place, Vancouver",
       "homeTeam": "Australia",
       "awayTeam": "Turkey",
-      "kickoffUtc": "2026-06-13T04:00:00Z",
-      "lockUtc": "2026-06-13T03:59:59Z",
+      "kickoffUtc": "2026-06-14T04:00:00Z",
+      "lockUtc": "2026-06-14T03:59:59Z",
       "status": "scheduled"
     },
     {
@@ -385,8 +385,8 @@
       "venue": "Lincoln Financial Field, Philadelphia",
       "homeTeam": "Brazil",
       "awayTeam": "Haiti",
-      "kickoffUtc": "2026-06-20T01:00:00Z",
-      "lockUtc": "2026-06-20T00:59:59Z",
+      "kickoffUtc": "2026-06-20T00:30:00Z",
+      "lockUtc": "2026-06-20T00:29:59Z",
       "status": "scheduled"
     },
     {
@@ -397,8 +397,8 @@
       "venue": "Estadio BBVA, Monterrey",
       "homeTeam": "Tunisia",
       "awayTeam": "Japan",
-      "kickoffUtc": "2026-06-20T04:00:00Z",
-      "lockUtc": "2026-06-20T03:59:59Z",
+      "kickoffUtc": "2026-06-21T04:00:00Z",
+      "lockUtc": "2026-06-21T03:59:59Z",
       "status": "scheduled"
     },
     {
