@@ -111,25 +111,52 @@ function getWinner(homeScore, awayScore) {
   return "draw";
 }
 
+// Normaliza nombres de equipos para emparejar con football-data.org.
+// Maneja diferencias como "Bosnia and Herzegovina" vs "Bosnia-Herzegovina",
+// acentos (Curaçao), "&"/"and" y alias oficiales (Türkiye, Côte d'Ivoire, etc).
+// Mantener en sync con normTeam/TEAM_ALIASES del frontend (app/app.js).
+const TEAM_ALIASES = {
+  turkiye: "turkey",
+  cotedivoire: "ivorycoast",
+  korearepublic: "southkorea", korea: "southkorea",
+  iriran: "iran",
+  congodr: "drcongo",
+  czechrepublic: "czechia",
+  caboverde: "capeverde",
+  unitedstatesofamerica: "unitedstates", usa: "unitedstates",
+};
+function normTeam(s) {
+  const base = (s || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/\band\b/g, " ")
+    .replace(/[^a-z0-9]/g, "");
+  return TEAM_ALIASES[base] || base;
+}
+
 /**
  * Busca el matchId local que corresponde a un partido de la API.
- * Compara por fecha UTC (mismo dia) + equipos.
+ * Compara por fecha UTC (mismo dia) + equipos normalizados (tolerante a
+ * diferencias de nombre/acentos y orden invertido local/visitante).
  * Si no encuentra match, retorna null (partido de fase eliminatoria aun sin mapear, etc).
  */
 function findLocalMatchId(apiMatch, localMatches) {
   const apiDate = apiMatch.utcDate ? apiMatch.utcDate.slice(0, 10) : null;
-  const apiHome = (apiMatch.homeTeam?.name || "").toLowerCase();
-  const apiAway = (apiMatch.awayTeam?.name || "").toLowerCase();
+  const apiHome = normTeam(apiMatch.homeTeam?.name);
+  const apiAway = normTeam(apiMatch.awayTeam?.name);
+  if (!apiHome || !apiAway) return null;
+
+  const hit = (x, y) => x && y && (x.includes(y) || y.includes(x));
 
   for (const local of localMatches) {
     const localDate = local.kickoffUtc ? local.kickoffUtc.slice(0, 10) : null;
-    const localHome = (local.homeTeam || "").toLowerCase();
-    const localAway = (local.awayTeam || "").toLowerCase();
+    if (localDate !== apiDate) continue;
+    const localHome = normTeam(local.homeTeam);
+    const localAway = normTeam(local.awayTeam);
 
-    if (localDate === apiDate && localHome.includes(apiHome) && localAway.includes(apiAway)) {
-      return local.id;
-    }
-    if (localDate === apiDate && apiHome.includes(localHome) && apiAway.includes(localAway)) {
+    if ((hit(localHome, apiHome) && hit(localAway, apiAway)) ||
+        (hit(localHome, apiAway) && hit(localAway, apiHome))) {
       return local.id;
     }
   }
