@@ -938,17 +938,18 @@ body {
   padding: 14px 8px 12px;
   text-align: center;
   position: relative;
-  overflow: hidden;
 }
-.lb-pod.silver { height: 130px; }
+/* La altura la define el contenido (los puntos nunca se recortan);
+   el escalonado del podio se logra con padding-top distinto + align-items:end. */
+.lb-pod.silver { padding-top: 28px; }
 .lb-pod.gold {
-  height: 152px;
+  padding-top: 44px;
   background:
     radial-gradient(ellipse 200px 100px at 50% 0%, color-mix(in oklab, var(--accent-3) 35%, transparent), transparent 70%),
     var(--bg-card);
   border-color: color-mix(in oklab, var(--accent-3) 40%, var(--border));
 }
-.lb-pod.bronze { height: 115px; }
+.lb-pod.bronze { padding-top: 14px; }
 .lb-pod .medal {
   font-family: var(--font-display);
   font-weight: 800;
