@@ -937,7 +937,7 @@ function openMatchDrawer(matchId) {
       <button class="drawer-tab" data-dtab="picks-all">👥 Picks</button>
       <button class="drawer-tab" data-dtab="live">⚽ En vivo</button>
       <button class="drawer-tab" data-dtab="lineup">👕 Alineaciones</button>
-      <button class="drawer-tab" data-dtab="tv">📺 Comentaristas</button>
+      <button class="drawer-tab" data-dtab="tv">📺 Jugadas</button>
     </div>
     <div class="drawer-body" id="drawer-tab-content" style="padding-top:0;flex:1;overflow-y:auto"></div>`;
 
@@ -982,14 +982,17 @@ function renderDrawerTab(m, tab) {
 
   if (tab === "live") {
     const st = matchState(m);
+    const kickoffPassed = Date.now() >= st.ko;
     if (st.finished) {
-      el.innerHTML = `<div class="live-mock"><div style="text-align:center;font-size:11px;color:var(--text-muted);letter-spacing:0.1em">FINALIZADO</div></div>`;
-    } else if (!st.live) {
-      el.innerHTML = `<div class="empty"><div class="icon">🕒</div><div class="title">Aún no comienza</div><p>Los datos en vivo se activan al kickoff.<br>Cierre de picks: <strong style="color:var(--accent)">${fmtCountdown(st.lk - Date.now())}</strong></p></div>`;
-    } else {
-      el.innerHTML = `<div class="live-mock"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:10px;font-weight:800;color:var(--live);letter-spacing:0.12em">● EN VIVO</span><span class="text-mono" style="font-size:11px;color:var(--text-soft)">${Math.floor((Date.now() - st.ko) / 60000)}'</span></div><div style="text-align:center;color:var(--text-muted);font-size:11px;padding:18px">Cargando datos en vivo…</div></div>`;
-      // Try to fetch from match-context netlify function
+      // Match finished — still show score from ESPN
+      el.innerHTML = `<div style="text-align:center;padding:18px;color:var(--text-muted);font-size:11px">Cargando resultado…</div>`;
       loadCtxLive(m);
+    } else if (kickoffPassed) {
+      // Kickoff passed (live or just not yet marked finished) — fetch live data
+      el.innerHTML = `<div class="live-mock"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:10px;font-weight:800;color:var(--live);letter-spacing:0.12em">● EN VIVO</span><span class="text-mono" style="font-size:11px;color:var(--text-soft)">${Math.floor((Date.now() - st.ko) / 60000)}'</span></div><div style="text-align:center;color:var(--text-muted);font-size:11px;padding:18px">Cargando datos en vivo…</div></div>`;
+      loadCtxLive(m);
+    } else {
+      el.innerHTML = `<div class="empty"><div class="icon">🕒</div><div class="title">Aún no comienza</div><p>Los datos en vivo se activan al kickoff.<br>Cierre de picks: <strong style="color:var(--accent)">${fmtCountdown(st.lk - Date.now())}</strong></p></div>`;
     }
     return;
   }
@@ -1132,20 +1135,56 @@ async function loadCtxCommentary(m) {
   const el = $("#drawer-tab-content");
   try {
     const data = await callContext({ action: "commentary", teams: [m.homeTeam, m.awayTeam] });
-    if (!data.available) { el.innerHTML = `<div class="empty"><div class="icon">📺</div><div class="title">Comentarios no disponibles</div><p>Xpoz no está configurado.</p></div>`; return; }
-    if (!data.posts?.length) { el.innerHTML = `<div class="empty"><div class="icon">🤷</div><div class="title">Sin comentarios recientes</div></div>`; return; }
-    el.innerHTML = data.posts.map(p => {
-      const initials = (p.author || "?").slice(0,2).toUpperCase();
-      return `
-        <div class="com-row">
-          <div class="com-av">${initials}</div>
-          <div class="com-info">
-            <div class="nm">${escapeHTML(p.author || "")}</div>
-            <div class="role">${escapeHTML((p.text || "").slice(0, 80))}…</div>
-          </div>
-          <div class="com-channel">❤️ ${p.likes || 0}</div>
-        </div>`;
-    }).join("");
+    if (!data.available) {
+      el.innerHTML = `<div class="empty"><div class="icon">📺</div><div class="title">Sin datos disponibles</div><p>ESPN no tiene commentary para este partido aún.</p></div>`;
+      return;
+    }
+
+    // Show key events first, then full commentary
+    const keyEvents = data.keyEvents || [];
+    const commentary = data.commentary || [];
+
+    if (!keyEvents.length && !commentary.length) {
+      el.innerHTML = `<div class="empty"><div class="icon">📺</div><div class="title">Sin jugadas registradas</div><p>El commentary se activa durante el partido.</p></div>`;
+      return;
+    }
+
+    const typeIcon = (type) => {
+      if (type === "goal") return "⚽";
+      if (type === "yellow-card" || type === "yellowCard") return "🟨";
+      if (type === "red-card" || type === "redCard") return "🟥";
+      if (type === "substitution") return "🔄";
+      if (type === "offside") return "🚩";
+      if (type === "foul") return "⚠️";
+      return "▪️";
+    };
+
+    // Key events (goals, cards, subs)
+    let html = "";
+    if (keyEvents.length) {
+      html += `<div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--accent);text-transform:uppercase;margin-bottom:8px">Eventos clave</div>`;
+      html += keyEvents.map(e => `
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:4px;font-size:11.5px">
+          <span style="flex-shrink:0;font-size:13px">${typeIcon(e.type)}</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--accent-2);min-width:28px;flex-shrink:0">${escapeHTML(e.time)}</span>
+          <span style="color:var(--text-soft);line-height:1.4">${escapeHTML(e.text)}</span>
+        </div>`).join("");
+      html += `</div>`;
+    }
+
+    // Full commentary (last 30 entries, reversed so newest first)
+    if (commentary.length) {
+      const recent = commentary.slice(-30).reverse();
+      html += `<div><div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">Jugada por jugada</div>`;
+      html += recent.map(c => `
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px">
+          <span style="font-family:var(--font-mono);font-weight:600;color:var(--text-muted);min-width:28px;flex-shrink:0">${escapeHTML(c.time)}</span>
+          <span style="color:var(--text-soft);line-height:1.4">${escapeHTML(c.text)}</span>
+        </div>`).join("");
+      html += `</div>`;
+    }
+
+    el.innerHTML = html;
   } catch (e) {
     el.innerHTML = `<div class="empty"><div class="icon">⚠️</div><div class="title">Error</div><p>${escapeHTML(e.message)}</p></div>`;
   }

@@ -137,8 +137,33 @@ exports.handler = async (event) => {
     }
 
     if (action === "commentary" && teams) {
-      const data = await getXpozCommentary(teams);
-      return ok(data);
+      // Use ESPN play-by-play commentary instead of Xpoz
+      const league2 = league || "fifa.world";
+      const sb = await getEspnScoreboard(league2);
+      const events = sb.events || [];
+      // Find event matching teams
+      const t0 = (teams[0] || "").toLowerCase(), t1 = (teams[1] || "").toLowerCase();
+      const evt = events.find(e => {
+        const c = e.competitions?.[0];
+        if (!c) return false;
+        const names = (c.competitors || []).map(x => (x.team?.displayName || "").toLowerCase());
+        return names.some(n => n.includes(t0) || t0.includes(n)) &&
+               names.some(n => n.includes(t1) || t1.includes(n));
+      });
+      if (!evt) return ok({ commentary: [], available: false, reason: "match not found in ESPN" });
+      const summary = await getEspnSummary(league2, evt.id);
+      const commentary = (summary.commentary || []).map(c => ({
+        time: c.time?.displayValue || "",
+        text: c.text || "",
+        type: c.play?.type?.type || null,
+      }));
+      const keyEvents = (summary.keyEvents || []).map(e => ({
+        time: e.clock?.displayValue || "",
+        text: e.text || e.shortText || "",
+        type: e.type?.type || null,
+        team: e.team?.displayName || null,
+      }));
+      return ok({ commentary, keyEvents, available: true });
     }
 
     return { statusCode: 400, body: "Missing action or params" };
