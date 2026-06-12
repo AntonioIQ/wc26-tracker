@@ -934,6 +934,7 @@ function openMatchDrawer(matchId) {
     </div>
     <div class="drawer-tabs">
       <button class="drawer-tab active" data-dtab="resumen">📋 Resumen</button>
+      <button class="drawer-tab" data-dtab="picks-all">👥 Picks</button>
       <button class="drawer-tab" data-dtab="live">⚽ En vivo</button>
       <button class="drawer-tab" data-dtab="lineup">👕 Alineaciones</button>
       <button class="drawer-tab" data-dtab="tv">📺 Comentaristas</button>
@@ -965,6 +966,17 @@ function renderDrawerTab(m, tab) {
       <div style="margin-top:14px;font-size:11px;color:var(--text-muted);line-height:1.5">
         <strong style="color:var(--text-soft)">Reglas rápidas:</strong> 3 pts marcador exacto · 1 pt resultado correcto · 0 si fallas. Cierre 1 seg. antes del kickoff.
       </div>`;
+    return;
+  }
+
+  if (tab === "picks-all") {
+    const st = matchState(m);
+    if (!st.locked) {
+      el.innerHTML = `<div class="empty"><div class="icon">🔒</div><div class="title">Picks ocultos</div><p>Los picks de todos se revelan cuando cierra el partido.</p></div>`;
+      return;
+    }
+    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:11px">Cargando picks…</div>`;
+    loadAllPicks(m);
     return;
   }
 
@@ -1142,6 +1154,76 @@ async function loadCtxCommentary(m) {
 function closeDrawer() {
   $("#drawer-overlay").classList.remove("show");
   $("#match-drawer").classList.remove("show");
+}
+
+// ────────────────── ALL PICKS FOR A MATCH ──────────────────
+async function loadAllPicks(m) {
+  const el = $("#drawer-tab-content");
+  const entries = state.leaderboard.entries || [];
+  if (!entries.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">👥</div><div class="title">Sin jugadores</div></div>`;
+    return;
+  }
+
+  const results = [];
+  for (const entry of entries) {
+    try {
+      const url = `${GH_RAW}/picks/${entry.userId}.json`;
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) continue;
+      const data = await r.json();
+      const pick = (data.picks || []).find(p => p.matchId === m.id);
+      if (pick && pick.homeScore != null && pick.awayScore != null) {
+        results.push({
+          displayName: entry.displayName || data.displayName || entry.userId,
+          avatar: entry.avatar || data.avatar || "⚽",
+          homeScore: pick.homeScore,
+          awayScore: pick.awayScore,
+          points: calcPickPoints(pick, m)
+        });
+      }
+    } catch {}
+  }
+
+  // Sort: highest points first, then by name
+  results.sort((a, b) => b.points - a.points || a.displayName.localeCompare(b.displayName));
+
+  if (!results.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">👥</div><div class="title">Nadie puso pick</div><p>Ningún jugador capturó predicción para este partido.</p></div>`;
+    return;
+  }
+
+  const hasResult = m.result && m.result.homeScore != null;
+
+  el.innerHTML = `
+    <div style="padding:4px 0 8px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px">
+        ${results.length} picks · ${hasResult ? `Resultado: ${m.result.homeScore}–${m.result.awayScore}` : "Esperando resultado"}
+      </div>
+      ${results.map(r => {
+        const avHTML = r.avatar?.startsWith("data:") ?
+          `<img src="${escapeHTML(r.avatar)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover">` :
+          `<span style="font-size:16px">${r.avatar}</span>`;
+        const ptsCls = r.points === 3 ? "color:var(--accent)" : r.points === 1 ? "color:var(--accent-2)" : "color:var(--text-muted)";
+        const ptsLabel = hasResult ? `<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;${ptsCls}">+${r.points}</span>` : "";
+        return `
+          <div style="display:grid;grid-template-columns:32px 1fr auto auto;gap:10px;align-items:center;padding:8px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:5px">
+            <div style="display:grid;place-items:center">${avHTML}</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(r.displayName)}</div>
+            <div style="font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--text);min-width:50px;text-align:center">${r.homeScore} – ${r.awayScore}</div>
+            ${ptsLabel}
+          </div>`;
+      }).join("")}
+    </div>`;
+}
+
+function calcPickPoints(pick, m) {
+  if (!m.result || m.result.homeScore == null) return 0;
+  const rh = m.result.homeScore, ra = m.result.awayScore;
+  const ph = Number(pick.homeScore), pa = Number(pick.awayScore);
+  if (rh === ph && ra === pa) return 3;
+  if (Math.sign(rh - ra) === Math.sign(ph - pa)) return 1;
+  return 0;
 }
 
 // ────────────────── RULES MODAL ──────────────────
