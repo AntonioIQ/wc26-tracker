@@ -1070,6 +1070,10 @@ async function loadCtxLive(m) {
 
     const comp = evt.competitions?.[0];
     const status = evt.status?.type?.name || "";
+    // ESPN reporta el estado por tiempo (STATUS_FIRST_HALF, STATUS_SECOND_HALF,
+    // STATUS_HALFTIME, STATUS_EXTRA_TIME…), no un genérico STATUS_IN_PROGRESS.
+    // Usamos type.state (pre | in | post) para detectar "en vivo" de forma robusta.
+    const state = evt.status?.type?.state || "";
     const clock = evt.status?.displayClock || "";
     const period = evt.status?.period || 0;
     const homeComp = comp?.competitors?.find(x => x.homeAway === "home");
@@ -1079,10 +1083,11 @@ async function loadCtxLive(m) {
     const homeName = homeComp?.team?.displayName || m.homeTeam;
     const awayName = awayComp?.team?.displayName || m.awayTeam;
 
-    const isLive = status === "STATUS_IN_PROGRESS" || status === "STATUS_HALFTIME";
-    const isFT = status === "STATUS_FULL_TIME";
-    const statusText = isLive ? `⚽ ${clock} · ${period === 1 ? "1er Tiempo" : "2do Tiempo"}` :
-                       status === "STATUS_HALFTIME" ? "⏸️ Medio Tiempo" :
+    const isHalftime = status === "STATUS_HALFTIME";
+    const isLive = state === "in";
+    const isFT = state === "post";
+    const statusText = isHalftime ? "⏸️ Medio Tiempo" :
+                       isLive ? `⚽ ${clock} · ${period === 1 ? "1er Tiempo" : "2do Tiempo"}` :
                        isFT ? "✅ FINALIZADO" : "🕒 Por iniciar";
 
     // Try to get summary for stats
