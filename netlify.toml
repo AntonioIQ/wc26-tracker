@@ -1,6 +1,7 @@
 [build]
   publish = "app"
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- app/"
+  # Skip all auto-builds — deploy only via CLI (netlify deploy --prod)
+  ignore = "exit 0"
 
 [functions]
   directory = "netlify/functions"
