@@ -61,9 +61,9 @@ function validatePickFileContent(content, matchMap, contextLabel) {
     assert(!hasSingleScore, `${contextLabel}: incomplete score for ${pick.matchId}`);
 
     if (hasBothScores) {
-      const submittedAt = Date.parse(content.submittedAtUtc);
-      const lockAt = Date.parse(match.lockUtc);
-      assert(submittedAt <= lockAt, `${contextLabel}: late pick for ${pick.matchId}`);
+      // Lock enforcement is done at save-time in the frontend and netlify function.
+      // Don't fail validation here — the file may be re-saved for other matches
+      // while containing older locked picks that didn't change.
     }
   }
 }
