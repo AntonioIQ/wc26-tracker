@@ -1018,9 +1018,76 @@ async function loadCtxLive(m) {
       const ea = (c.competitors?.find(x => x.homeAway === "away")?.team?.displayName || "").toLowerCase();
       return (eh.includes(h) || h.includes(eh)) && (ea.includes(a) || a.includes(ea));
     });
-    if (!evt) return; // keep loading state, no data
-    // Could fetch summary stats here; for now just refresh with placeholder
-  } catch (e) { /* silent */ }
+    if (!evt) {
+      el.innerHTML = `<div class="empty"><div class="icon">📡</div><div class="title">Sin datos en vivo</div><p>ESPN no reporta este partido aún.</p></div>`;
+      return;
+    }
+
+    const comp = evt.competitions?.[0];
+    const status = evt.status?.type?.name || "";
+    const clock = evt.status?.displayClock || "";
+    const period = evt.status?.period || 0;
+    const homeComp = comp?.competitors?.find(x => x.homeAway === "home");
+    const awayComp = comp?.competitors?.find(x => x.homeAway === "away");
+    const homeScore = homeComp?.score || "0";
+    const awayScore = awayComp?.score || "0";
+    const homeName = homeComp?.team?.displayName || m.homeTeam;
+    const awayName = awayComp?.team?.displayName || m.awayTeam;
+
+    const isLive = status === "STATUS_IN_PROGRESS" || status === "STATUS_HALFTIME";
+    const isFT = status === "STATUS_FULL_TIME";
+    const statusText = isLive ? `⚽ ${clock} · ${period === 1 ? "1er Tiempo" : "2do Tiempo"}` :
+                       status === "STATUS_HALFTIME" ? "⏸️ Medio Tiempo" :
+                       isFT ? "✅ FINALIZADO" : "🕒 Por iniciar";
+
+    // Try to get summary for stats
+    let statsHTML = "";
+    try {
+      const summary = await callContext({ action: "summary", league: "fifa.world", eventId: evt.id });
+      const stats = summary.raw?.header?.competitions?.[0]?.competitors;
+      if (stats && stats.length === 2) {
+        const hStats = stats.find(s => s.homeAway === "home")?.statistics || [];
+        const aStats = stats.find(s => s.homeAway === "away")?.statistics || [];
+        const statPairs = hStats.map((hs, i) => ({
+          label: hs.abbreviation || hs.name || "",
+          home: hs.displayValue || "0",
+          away: aStats[i]?.displayValue || "0"
+        })).filter(s => s.label);
+
+        if (statPairs.length) {
+          statsHTML = `<div style="margin-top:14px"><div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase">Estadísticas</div>${statPairs.map(s => `
+            <div class="live-stat-row">
+              <span class="l">${s.home}</span>
+              <span class="lbl">${escapeHTML(s.label)}</span>
+              <span class="r">${s.away}</span>
+            </div>`).join("")}</div>`;
+        }
+      }
+    } catch {}
+
+    el.innerHTML = `
+      <div class="live-mock">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span style="font-size:10px;font-weight:800;letter-spacing:0.12em;color:${isLive ? 'var(--live)' : 'var(--text-muted)'}">${isLive ? '● EN VIVO' : statusText}</span>
+          ${isLive ? `<span class="text-mono" style="font-size:12px;color:var(--text-soft);font-weight:700">${clock}</span>` : ""}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;text-align:center;padding:8px 0 14px">
+          <div>
+            <span style="font-size:28px">${flag(m.homeTeam)}</span>
+            <div style="font-size:11px;font-weight:700;margin-top:4px;color:var(--text)">${escapeHTML(shortName(homeName))}</div>
+          </div>
+          <div style="font-family:var(--font-display);font-size:32px;font-weight:800;color:var(--text)">${homeScore} <span style="color:var(--text-muted);font-size:18px">–</span> ${awayScore}</div>
+          <div>
+            <span style="font-size:28px">${flag(m.awayTeam)}</span>
+            <div style="font-size:11px;font-weight:700;margin-top:4px;color:var(--text)">${escapeHTML(shortName(awayName))}</div>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:11px;color:var(--text-muted);padding-bottom:8px">${statusText}</div>
+      </div>
+      ${statsHTML}`;
+  } catch (e) {
+    el.innerHTML = `<div class="empty"><div class="icon">⚠️</div><div class="title">Error</div><p>${escapeHTML(e.message)}</p></div>`;
+  }
 }
 
 async function loadCtxLineups(m) {
