@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "jacher7@gmail.com",
-  "submittedAtUtc": "2026-06-12T03:06:34.244Z",
+  "submittedAtUtc": "2026-06-13T01:22:15.859Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -39,7 +39,7 @@
     {
       "matchId": "match-007",
       "homeScore": 2,
-      "awayScore": 1
+      "awayScore": 2
     },
     {
       "matchId": "match-008",
