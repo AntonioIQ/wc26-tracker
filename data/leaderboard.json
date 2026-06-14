@@ -1,5 +1,5 @@
 {
-  "generatedAtUtc": "2026-06-14T21:56:50.641Z",
+  "generatedAtUtc": "2026-06-14T21:59:53.116Z",
   "entries": [
     {
       "userId": "angelofiesco",
@@ -79,7 +79,7 @@
       "totalPoints": 6
     },
     {
-      "userId": "guest",
+      "userId": "victorm1608",
       "displayName": "Victor Manuel",
       "avatar": "⚽",
       "tagline": "",
@@ -91,13 +91,6 @@
       "avatar": "🔥",
       "tagline": "El nene",
       "totalPoints": 3
-    },
-    {
-      "userId": "victorm1608",
-      "displayName": "Victor Manuel",
-      "avatar": "⚽",
-      "tagline": "",
-      "totalPoints": 2
     }
   ]
 }
