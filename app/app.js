@@ -131,6 +131,12 @@ const shortName = (team) => {
 const slugify = (v) => String(v||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
 const normalizeStage = (s) => (s === "quarter-final" ? "quarterfinal" : s === "semi-final" ? "semifinal" : s);
 const fmtTime = (iso) => new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", timeZone: "America/Mexico_City", hour12: false });
+// ESPN agrupa los partidos por fecha del Este de EE.UU. (no UTC): un partido a
+// las 04:00Z cae en el día siguiente al de uno a la 01:00Z. Devuelve YYYYMMDD en
+// America/New_York para pedir el scoreboard del día correcto (?dates=).
+const espnDate = (iso) => iso
+  ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso)).replace(/-/g, "")
+  : undefined;
 const fmtDay = (iso) => {
   const d = new Date(iso);
   const day = d.toLocaleDateString("es-MX", { weekday: "short", timeZone: "America/Mexico_City" }).toUpperCase().replace(".","");
@@ -1060,7 +1066,7 @@ async function callContext(body) {
 async function loadCtxLive(m) {
   const el = $("#drawer-tab-content");
   try {
-    const sb = await callContext({ action: "scoreboard", league: "fifa.world" });
+    const sb = await callContext({ action: "scoreboard", league: "fifa.world", dates: espnDate(m.kickoffUtc) });
     const events = sb.events || [];
     const evt = findEspnEvent(events, m.homeTeam, m.awayTeam);
     if (!evt) {
@@ -1143,7 +1149,7 @@ async function loadCtxLive(m) {
 async function loadCtxLineups(m) {
   const el = $("#drawer-tab-content");
   try {
-    const sb = await callContext({ action: "scoreboard", league: "fifa.world" });
+    const sb = await callContext({ action: "scoreboard", league: "fifa.world", dates: espnDate(m.kickoffUtc) });
     const events = sb.events || [];
     const evt = findEspnEvent(events, m.homeTeam, m.awayTeam);
     if (!evt) { el.innerHTML = `<div class="empty"><div class="icon">👕</div><div class="title">Alineaciones no disponibles</div><p>Se publican poco antes del inicio.</p></div>`; return; }
@@ -1162,7 +1168,7 @@ async function loadCtxLineups(m) {
 async function loadCtxCommentary(m) {
   const el = $("#drawer-tab-content");
   try {
-    const data = await callContext({ action: "commentary", teams: [m.homeTeam, m.awayTeam] });
+    const data = await callContext({ action: "commentary", teams: [m.homeTeam, m.awayTeam], dates: espnDate(m.kickoffUtc) });
     if (!data.available) {
       el.innerHTML = `<div class="empty"><div class="icon">📺</div><div class="title">Sin datos disponibles</div><p>ESPN no tiene commentary para este partido aún.</p></div>`;
       return;

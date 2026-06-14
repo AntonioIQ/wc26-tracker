@@ -48,8 +48,12 @@ function normTeam(s) {
   return TEAM_ALIASES[base] || base;
 }
 
-async function getEspnScoreboard(league) {
-  return fetchJson(`${ESPN_BASE}/${league}/scoreboard`);
+// ESPN agrupa por fecha del Este de EE.UU.; el scoreboard por defecto solo trae
+// el día actual. `dates` (YYYYMMDD) permite pedir el día exacto del partido para
+// que aparezca aunque su kickoff caiga pasada la medianoche UTC.
+async function getEspnScoreboard(league, dates) {
+  const q = /^\d{8}$/.test(dates || "") ? `?dates=${dates}` : "";
+  return fetchJson(`${ESPN_BASE}/${league}/scoreboard${q}`);
 }
 
 async function getEspnSummary(league, eventId) {
@@ -145,11 +149,11 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: "Invalid JSON" };
   }
 
-  const { action, league, eventId, teams } = body;
+  const { action, league, eventId, teams, dates } = body;
 
   try {
     if (action === "scoreboard") {
-      const data = await getEspnScoreboard(league || "fifa.world");
+      const data = await getEspnScoreboard(league || "fifa.world", dates);
       return ok(data);
     }
 
@@ -162,7 +166,7 @@ exports.handler = async (event) => {
     if (action === "commentary" && teams) {
       // Use ESPN play-by-play commentary instead of Xpoz
       const league2 = league || "fifa.world";
-      const sb = await getEspnScoreboard(league2);
+      const sb = await getEspnScoreboard(league2, dates);
       const events = sb.events || [];
       // Find event matching teams (nombres normalizados, tolera guiones/"and")
       const t0 = normTeam(teams[0]), t1 = normTeam(teams[1]);
