@@ -4,7 +4,7 @@
   "avatar": "data:image/jpeg;base64,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",
   "tagline": "Ian se la come",
   "email": "alan602000@hotmail.com",
-  "submittedAtUtc": "2026-06-12T21:06:42.074Z",
+  "submittedAtUtc": "2026-06-14T22:44:21.358Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -68,53 +68,53 @@
     },
     {
       "matchId": "match-013",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 7,
+      "awayScore": 0
     },
     {
       "matchId": "match-014",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 3,
+      "awayScore": 2
     },
     {
       "matchId": "match-015",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-016",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 2
     },
     {
       "matchId": "match-017",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-018",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 5
     },
     {
       "matchId": "match-019",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 3,
+      "awayScore": 1
     },
     {
       "matchId": "match-020",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-021",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 3,
+      "awayScore": 0
     },
     {
       "matchId": "match-022",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-023",
