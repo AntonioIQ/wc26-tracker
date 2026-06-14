@@ -89,6 +89,12 @@ function buildLeaderboard() {
       if (!result) {
         return sum;
       }
+      // Solo puntuar partidos finalizados. Durante el juego, football-data
+      // reporta el marcador actual (status "live") y puntuariamos con un
+      // marcador intermedio equivocado que el siguiente ciclo corregiria.
+      if (result.status !== "finished") {
+        return sum;
+      }
       return sum + scorePick(pick, result, match);
     }, 0);
 
