@@ -59,13 +59,29 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: "JSON invalido" };
   }
 
-  if (!picks.userId || !Array.isArray(picks.picks)) {
+  if (!Array.isArray(picks.picks)) {
     return { statusCode: 400, body: "Faltan campos requeridos" };
   }
 
-  const slug = picks.userId.toLowerCase()
+  const slugify = (s) => (s || "").toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "participante";
+    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+  // Identidad por correo autenticado (server-side), NO por el userId que manda
+  // el cliente: asi un mismo correo siempre escribe el mismo archivo y nunca se
+  // generan duplicados aunque cambie el dispositivo o el cach\u00e9 del navegador.
+  // EMAIL_TO_SLUG cubre cuentas legacy cuyo archivo != prefijo del correo
+  // (debe estar en sync con LEGACY_EMAIL_MAP de app.js).
+  const EMAIL_TO_SLUG = {
+    "jacher7@gmail.com": "jacob",
+    "ldrinaldi73@gmail.com": "luisdanielrinaldi",
+  };
+  const email = (user.email || "").toLowerCase();
+  const slug = (email ? (EMAIL_TO_SLUG[email] || slugify(email.split("@")[0])) : slugify(picks.userId)) || "participante";
+
+  // Forzar que el contenido guardado sea consistente con la identidad real.
+  picks.userId = slug;
+  if (email) picks.email = email;
 
   const filePath = `data/picks/${slug}.json`;
   const content = Buffer.from(JSON.stringify(picks, null, 2) + "\n").toString("base64");

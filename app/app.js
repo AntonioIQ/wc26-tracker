@@ -241,26 +241,29 @@ function getProfile() {
 }
 function saveProfile(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
 
+// Mapa legacy: correos cuyo archivo de picks NO coincide con el prefijo del
+// correo (cuentas antiguas). Debe estar en sync con EMAIL_TO_SLUG de save-picks.js.
+const LEGACY_EMAIL_MAP = {
+  "jacher7@gmail.com": "jacob",
+  "ldrinaldi73@gmail.com": "luisdanielrinaldi",
+};
+
 function getStableUserId() {
   const profile = getProfile();
-  if (profile.userId) return profile.userId;
-  const email = state.currentUser?.email || "";
-  
-  // Legacy users whose pick file doesn't match their email prefix
-  const LEGACY_MAP = {
-    "jacher7@gmail.com": "jacob",
-    "arcel1989rata@hotmail.com": "arcel",
-    "ldrinaldi73@gmail.com": "luisdanielrinaldi",
-  };
-  
-  if (LEGACY_MAP[email]) {
-    const id = LEGACY_MAP[email];
-    profile.userId = id; saveProfile(profile);
+  const email = (state.currentUser?.email || "").toLowerCase();
+
+  // La identidad se deriva SIEMPRE del correo autenticado (no del userId
+  // cacheado en el navegador). Esto evita que un mismo correo termine con dos
+  // archivos de picks si el caché local diverge entre dispositivos/sesiones.
+  if (email) {
+    const id = LEGACY_EMAIL_MAP[email] || slugify(email.split("@")[0]);
+    if (profile.userId !== id) { profile.userId = id; saveProfile(profile); }
     return id;
   }
-  
-  // Use email prefix as primary ID source (matches existing pick filenames)
-  const id = slugify(email.split("@")[0]) || slugify(state.currentUser?.user_metadata?.full_name) || "anon";
+
+  // Sin correo (caso borde): usar caché previo o nombre.
+  if (profile.userId) return profile.userId;
+  const id = slugify(state.currentUser?.user_metadata?.full_name) || "anon";
   profile.userId = id; saveProfile(profile);
   return id;
 }
