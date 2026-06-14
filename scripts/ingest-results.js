@@ -201,13 +201,17 @@ async function main() {
     const status = mapStatus(apiMatch.status);
     const score = apiMatch.score || {};
     const duration = score.duration || "REGULAR";
-    const regular = score.regularTime || score.fullTime || {};
+    const regular = score.regularTime || {};
+    const full = score.fullTime || {};
     const extra = score.extraTime || {};
     const penalties = score.penalties || {};
 
-    // Marcador al 90 min (regularTime) para scoring de quiniela
-    const homeScore = regular.home ?? null;
-    const awayScore = regular.away ?? null;
+    // Marcador al 90 min para scoring de quiniela. Preferimos regularTime, pero
+    // football-data a veces lo devuelve nulo (o como objeto {home:null,away:null})
+    // y deja el marcador solo en fullTime; por eso el fallback es por campo con ??
+    // (no con ||, que elegiria un objeto regularTime "truthy" con valores nulos).
+    const homeScore = regular.home ?? full.home ?? null;
+    const awayScore = regular.away ?? full.away ?? null;
 
     // Info de eliminatoria: prórroga, penales, clasificado
     const isKnockout = duration !== "REGULAR";
