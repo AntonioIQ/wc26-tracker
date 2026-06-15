@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "arcel1989rata@hotmail.com",
-  "submittedAtUtc": "2026-06-14T18:48:44.544Z",
+  "submittedAtUtc": "2026-06-15T01:57:24.074Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -64,7 +64,7 @@
     {
       "matchId": "match-012",
       "homeScore": 2,
-      "awayScore": 1
+      "awayScore": 0
     },
     {
       "matchId": "match-013",
