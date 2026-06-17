@@ -83,6 +83,80 @@ function apiGet(endpoint) {
   });
 }
 
+// ── ESPN: cierre rápido del partido ──────────────────────────────────────────
+// ESPN reporta en tiempo real y marca "post"/completed apenas termina el juego,
+// mucho antes que football-data. Lo usamos SOLO en fase de grupos, donde el
+// marcador final == marcador al minuto 90 (la regla de la quiniela). En
+// eliminatoria NO se usa: el final de ESPN puede incluir prórroga/penales y ahí
+// necesitamos el regularTime que sí entrega football-data.
+const ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+
+function espnGet(yyyymmdd) {
+  return new Promise((resolve, reject) => {
+    const url = /^\d{8}$/.test(yyyymmdd) ? `${ESPN_SCOREBOARD}?dates=${yyyymmdd}` : ESPN_SCOREBOARD;
+    https.get(url, (res) => {
+      let body = "";
+      res.on("data", (c) => { body += c; });
+      res.on("end", () => {
+        if (res.statusCode !== 200) { reject(new Error(`ESPN ${res.statusCode}`)); return; }
+        try { resolve(JSON.parse(body)); } catch (err) { reject(err); }
+      });
+    }).on("error", reject);
+  });
+}
+
+function prevDayYmd(yyyymmdd) {
+  const y = +yyyymmdd.slice(0, 4), m = +yyyymmdd.slice(4, 6), d = +yyyymmdd.slice(6, 8);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() - 1);
+  return dt.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+// Lista de partidos de ESPN (con su marcador y si ya terminaron) para un set de
+// fechas UTC. Best-effort: si una fecha falla, la salta.
+async function getEspnFinals(dates) {
+  const events = [];
+  for (const d of dates) {
+    let data;
+    try { data = await espnGet(d); } catch { continue; }
+    for (const ev of data.events || []) {
+      const comp = ev.competitions && ev.competitions[0];
+      if (!comp) continue;
+      const cs = comp.competitors || [];
+      const home = cs.find((c) => c.homeAway === "home");
+      const away = cs.find((c) => c.homeAway === "away");
+      if (!home || !away) continue;
+      const t = ev.status && ev.status.type;
+      const completed = !!(t && (t.completed === true || t.state === "post"));
+      events.push({
+        date: (ev.date || "").slice(0, 10),
+        home: home.team && home.team.displayName,
+        away: away.team && away.team.displayName,
+        homeScore: Number(home.score),
+        awayScore: Number(away.score),
+        completed,
+      });
+    }
+  }
+  return events;
+}
+
+// Empareja un match local con el partido de ESPN (fecha + equipos, tolerante a
+// nombres/acentos y orden invertido). Devuelve el marcador YA orientado al
+// local/visitante del match local.
+function findEspnFinal(localMatch, espnEvents) {
+  const ld = localMatch.kickoffUtc ? localMatch.kickoffUtc.slice(0, 10) : null;
+  const lh = normTeam(localMatch.homeTeam), la = normTeam(localMatch.awayTeam);
+  const hit = (x, y) => x && y && (x.includes(y) || y.includes(x));
+  for (const e of espnEvents) {
+    if (e.date !== ld) continue;
+    const eh = normTeam(e.home), ea = normTeam(e.away);
+    if (hit(lh, eh) && hit(la, ea)) return { homeScore: e.homeScore, awayScore: e.awayScore, completed: e.completed };
+    if (hit(lh, ea) && hit(la, eh)) return { homeScore: e.awayScore, awayScore: e.homeScore, completed: e.completed };
+  }
+  return null;
+}
+
 /**
  * Mapea el status de football-data.org a nuestro formato interno.
  */
@@ -255,9 +329,63 @@ async function main() {
       // No sobreescribir resultados ingresados manualmente que ya estan finalizados
       continue;
     }
+    // No degradar: si ya está finalizado (p.ej. cierre provisional de ESPN), no
+    // lo regreses a "live" con un snapshot intermedio de football-data. Cuando
+    // football-data finalice, sí entra (finished -> finished) y valida/corrige.
+    if (existing && existing.status === "finished" && status !== "finished") {
+      continue;
+    }
 
     resultMap.set(localId, entry);
     updated++;
+  }
+
+  // ── Cierre rápido vía ESPN (solo fase de grupos) ────────────────────────────
+  // Para partidos de grupos ya iniciados que football-data aún no marca finished,
+  // si ESPN dice que terminaron, los cerramos de forma provisional. Football-data
+  // los valida/corrige en un ciclo posterior (finished oficial pisa al provisional).
+  const now = Date.now();
+  const espnCandidates = localMatches.filter((m) => {
+    if (m.stage !== "group" || !m.kickoffUtc || Date.parse(m.kickoffUtc) >= now) return false;
+    const cur = resultMap.get(m.id);
+    return !(cur && cur.status === "finished");
+  });
+
+  let espnClosed = 0;
+  if (espnCandidates.length) {
+    const dates = new Set();
+    for (const m of espnCandidates) {
+      const d = m.kickoffUtc.slice(0, 10).replace(/-/g, "");
+      dates.add(d);
+      dates.add(prevDayYmd(d)); // cubre el desfase de día de ESPN (agrupa por US Eastern)
+    }
+    let espnEvents = [];
+    try { espnEvents = await getEspnFinals([...dates]); }
+    catch (err) { console.warn(`ESPN no disponible: ${err.message}. Sigo solo con football-data.`); }
+
+    for (const m of espnCandidates) {
+      const ef = findEspnFinal(m, espnEvents);
+      if (!ef || !ef.completed || !Number.isFinite(ef.homeScore) || !Number.isFinite(ef.awayScore)) continue;
+      const existing = resultMap.get(m.id);
+      if (existing && existing.source === "manual" && existing.status === "finished") continue;
+      resultMap.set(m.id, {
+        matchId: m.id,
+        status: "finished",
+        homeScore: ef.homeScore,
+        awayScore: ef.awayScore,
+        winner: getWinner(ef.homeScore, ef.awayScore),
+        duration: "regular",
+        extraHome: null,
+        extraAway: null,
+        penHome: null,
+        penAway: null,
+        qualifiedTeam: ef.homeScore !== ef.awayScore ? (ef.homeScore > ef.awayScore ? "home" : "away") : null,
+        source: "espn-provisional",
+        updatedAtUtc: new Date().toISOString(),
+      });
+      espnClosed++;
+      updated++;
+    }
   }
 
   const newResults = {
@@ -265,7 +393,7 @@ async function main() {
   };
 
   writeJson("results.json", newResults);
-  console.log(`Listo. Actualizados: ${updated}, sin mapear: ${skipped}.`);
+  console.log(`Listo. Actualizados: ${updated} (ESPN cerró ${espnClosed}), sin mapear: ${skipped}.`);
   console.log("Recuerda que overrides.json siempre tiene prioridad sobre estos datos.");
 }
 
