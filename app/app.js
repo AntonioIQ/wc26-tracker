@@ -109,6 +109,7 @@ const state = {
   filter: "proximos",
   selectedDay: null,
   mapInstance: null,
+  live: {},               // marcadores en vivo de ESPN, por matchId (solo display)
 };
 
 // ────────────────── HELPERS ──────────────────
@@ -204,7 +205,8 @@ function matchState(m) {
   const ko = Date.parse(m.kickoffUtc);
   const lk = Date.parse(m.lockUtc);
   const finished = m.displayStatus === "finished" || m.displayStatus === "FINISHED";
-  const live = !finished && now >= ko && now < ko + 110 * 60 * 1000;
+  const espnState = state.live[m.id] && state.live[m.id].state;
+  const live = !finished && (espnState === "in" || (now >= ko && now < ko + 110 * 60 * 1000));
   const locked = now >= lk;
   return { locked, live, finished, ko, lk };
 }
@@ -417,6 +419,17 @@ function pickCardHTML(m, opts = {}) {
     filled ? `<span class="pc-status filled">✓ PICK LISTO</span>` :
     `<span class="pc-status" style="color:var(--text-muted)">SIN PICK</span>`;
 
+  // Marcador en vivo de ESPN: se sobrepone al de results.json mientras el partido
+  // no esté finalizado oficialmente, para que el calendario no quede atrasado.
+  const ls = state.live[m.id];
+  const liveOn = ls && ls.homeScore != null && !st.finished;
+  const liveDot = liveOn && ls.state === "in"
+    ? `<span title="En vivo (ESPN)" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--live);margin-right:4px;vertical-align:middle"></span>`
+    : "";
+  const dispH = liveOn ? ls.homeScore : (m.result?.homeScore ?? "–");
+  const dispA = liveOn ? ls.awayScore : (m.result?.awayScore ?? "–");
+  const liveStyle = liveOn ? "color:var(--live);" : "";
+
   const showInputs = !opts.readonly;
   const scoreCol = showInputs ? `
     <div class="pc-score" data-stop>
@@ -425,9 +438,9 @@ function pickCardHTML(m, opts = {}) {
       <input class="pc-input ${pick?.awayScore != null && pick.awayScore !== "" ? "has-value" : ""}" type="number" min="0" max="99" inputmode="numeric" placeholder="–" value="${pick?.awayScore ?? ""}" ${st.locked ? "disabled" : ""} data-match="${m.id}" data-side="away" aria-label="Goles visitante">
     </div>` : `
     <div class="pc-score">
-      <div class="pc-input" style="border-color:transparent;background:transparent;font-size:18px">${m.result?.homeScore ?? "–"}</div>
+      <div class="pc-input" style="border-color:transparent;background:transparent;font-size:18px;${liveStyle}">${liveDot}${dispH}</div>
       <span class="pc-sep">–</span>
-      <div class="pc-input" style="border-color:transparent;background:transparent;font-size:18px">${m.result?.awayScore ?? "–"}</div>
+      <div class="pc-input" style="border-color:transparent;background:transparent;font-size:18px;${liveStyle}">${dispA}</div>
     </div>`;
 
   return `
@@ -1066,6 +1079,61 @@ async function callContext(body) {
   return r.json();
 }
 
+// ── Marcadores en vivo (ESPN) para calendario/bracket/grupos ─────────────────
+// El calendario lee results.json (football-data, vía cron) y puede ir atrasado
+// mientras un partido está en juego o recién terminó. Aquí pedimos a ESPN (la
+// misma fuente del drawer "En vivo") el marcador real y lo sobreponemos. NO
+// afecta la puntuación: los puntos siguen saliendo del resultado oficial.
+async function loadLiveScores() {
+  const now = Date.now();
+  const cand = state.matches.filter((m) => {
+    const ko = Date.parse(m.kickoffUtc);
+    const finishedOfficial = m.displayStatus === "finished" || m.displayStatus === "FINISHED";
+    return ko <= now && now < ko + 4 * 60 * 60 * 1000 && !finishedOfficial;
+  });
+  if (!cand.length) return false;
+
+  const dates = [...new Set(cand.map((m) => espnDate(m.kickoffUtc)).filter(Boolean))];
+  let changed = false;
+  for (const d of dates) {
+    let sb;
+    try { sb = await callContext({ action: "scoreboard", league: "fifa.world", dates: d }); }
+    catch { continue; }
+    const events = sb.events || [];
+    for (const m of cand) {
+      const evt = findEspnEvent(events, m.homeTeam, m.awayTeam);
+      const comp = evt && evt.competitions && evt.competitions[0];
+      if (!comp) continue;
+      const estate = evt.status?.type?.state || "";
+      if (estate !== "in" && estate !== "post") continue; // ignorar pre-partido
+      const h = comp.competitors?.find((x) => x.homeAway === "home");
+      const a = comp.competitors?.find((x) => x.homeAway === "away");
+      if (h?.score == null || a?.score == null) continue;
+      const next = { homeScore: Number(h.score), awayScore: Number(a.score), state: estate };
+      const prev = state.live[m.id];
+      if (!prev || prev.homeScore !== next.homeScore || prev.awayScore !== next.awayScore || prev.state !== next.state) {
+        state.live[m.id] = next;
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
+let liveTickHandle = null;
+function startLiveTick() {
+  if (liveTickHandle) return;
+  const tick = () => loadLiveScores().then((changed) => {
+    if (!changed) return;
+    // No re-renderizar si el usuario está capturando un marcador (perdería foco).
+    const f = document.activeElement;
+    if (f && f.classList && f.classList.contains("pc-input")) return;
+    renderCurrentTab();
+  }).catch(() => {});
+  tick();
+  liveTickHandle = setInterval(tick, 60 * 1000);
+}
+
 async function loadCtxLive(m) {
   const el = $("#drawer-tab-content");
   try {
@@ -1612,6 +1680,7 @@ async function boot() {
     renderCurrentTab();
     loadWeatherBar();
     startHeroTick();
+    startLiveTick();
 
     $("#global-loading").classList.add("hide");
   } catch (e) {
