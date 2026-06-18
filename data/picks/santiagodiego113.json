@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "santiagodiego113@gmail.com",
-  "submittedAtUtc": "2026-06-18T01:12:18.481Z",
+  "submittedAtUtc": "2026-06-18T01:13:16.126Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -134,7 +134,7 @@
     {
       "matchId": "match-026",
       "homeScore": 2,
-      "awayScore": 1
+      "awayScore": 0
     },
     {
       "matchId": "match-027",
