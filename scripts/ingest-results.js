@@ -335,6 +335,15 @@ async function main() {
     if (existing && existing.status === "finished" && status !== "finished") {
       continue;
     }
+    // No borrar un marcador válido con null: football-data a veces devuelve un
+    // partido "finished" pero con regularTime/fullTime en null de forma
+    // transitoria. Si ya teníamos un marcador, conservamos el bueno; de lo
+    // contrario score.js daría 0 y todos perderían los puntos de ese partido
+    // hasta el siguiente ciclo (bug de "puntos que se reducen al consultar").
+    if (existing && existing.homeScore !== null && existing.awayScore !== null &&
+        (homeScore === null || awayScore === null)) {
+      continue;
+    }
 
     resultMap.set(localId, entry);
     updated++;
