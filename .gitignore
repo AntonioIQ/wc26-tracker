@@ -2,3 +2,6 @@ node_modules/
 .env
 .netlify/
 scripts/test-api.js
+
+# Reportes locales de QA (no se suben)
+local/

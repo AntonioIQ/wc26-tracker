@@ -759,7 +759,12 @@ function renderCalendario() {
   const byDay = {};
   state.matches.forEach(m => { const k = dayKey(m.kickoffUtc); (byDay[k] = byDay[k] || []).push(m); });
   const allDays = Object.keys(byDay).sort();
-  if (!state.selectedDay) state.selectedDay = allDays[0];
+  if (!state.selectedDay) {
+    // Por default abrir en el día de hoy; si hoy no hay partidos, el próximo día
+    // con partidos; si el torneo ya terminó, el último día.
+    const todayKey = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+    state.selectedDay = allDays.find(d => d >= todayKey) || allDays[allDays.length - 1] || todayKey;
+  }
 
   const buildGrid = (year, month) => {
     const first = new Date(year, month, 1);
@@ -1120,18 +1125,52 @@ async function loadLiveScores() {
   return changed;
 }
 
-let liveTickHandle = null;
-function startLiveTick() {
-  if (liveTickHandle) return;
-  const tick = () => loadLiveScores().then((changed) => {
-    if (!changed) return;
-    // No re-renderizar si el usuario está capturando un marcador (perdería foco).
-    const f = document.activeElement;
-    if (f && f.classList && f.classList.contains("pc-input")) return;
+// Re-lee los datos compartidos que cambian durante el torneo (resultados
+// oficiales, leaderboard, overrides) sin recargar la página. matches.json y
+// venues.json son estáticos, así que no hace falta volver a pedirlos.
+async function refreshSharedData() {
+  try {
+    const [rd, ld, od] = await Promise.all([
+      fetchJson(DATA_URLS.results),
+      fetchJson(DATA_URLS.leaderboard),
+      fetchJson(DATA_URLS.overrides),
+    ]);
+    const results = rd.results || [];
+    state.results = {};
+    results.forEach((r) => { state.results[r.matchId] = r; });
+    state.matches = mergeData(state.rawMatches, results, od);
+    state.leaderboard = ld;
+    return true;
+  } catch { return false; }
+}
+
+// ¿El usuario está capturando un marcador? Re-renderizar le quitaría el foco.
+function isEditingPick() {
+  const f = document.activeElement;
+  return !!(f && f.classList && f.classList.contains("pc-input"));
+}
+
+// ── Auto-refresco mientras la app está abierta ───────────────────────────────
+// Cada 60s actualiza tabla/resultados, marcadores en vivo (ESPN) y tus jugadas,
+// y re-renderiza. Pausa en segundo plano y refresca al instante al volver.
+let autoRefreshHandle = null;
+function startAutoRefresh() {
+  if (autoRefreshHandle) return;
+  const tick = async () => {
+    if (document.hidden) return; // no gastar red con la pestaña oculta
+    const [dataChanged, liveChanged] = await Promise.all([
+      refreshSharedData(),
+      loadLiveScores().catch(() => false),
+    ]);
+    await syncPicksFromRepo().catch(() => {}); // re-renderiza adentro si cambió
+    if (!dataChanged && !liveChanged) return;
+    if (isEditingPick()) return;
     renderCurrentTab();
-  }).catch(() => {});
+  };
   tick();
-  liveTickHandle = setInterval(tick, 60 * 1000);
+  autoRefreshHandle = setInterval(tick, 60 * 1000);
+  // Al volver a la pestaña (o destrabar el teléfono) refrescar de inmediato.
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
 }
 
 async function loadCtxLive(m) {
@@ -1565,7 +1604,8 @@ async function syncPicksFromRepo() {
         $("#profile-name").value = remote.displayName || "";
         $("#profile-tagline").value = remote.tagline || "";
       }
-      renderCurrentTab();
+      // No re-renderizar si el usuario está capturando un marcador (perdería foco).
+      if (!isEditingPick()) renderCurrentTab();
     }
   } catch {}
 }
@@ -1680,7 +1720,7 @@ async function boot() {
     renderCurrentTab();
     loadWeatherBar();
     startHeroTick();
-    startLiveTick();
+    startAutoRefresh();
 
     $("#global-loading").classList.add("hide");
   } catch (e) {
