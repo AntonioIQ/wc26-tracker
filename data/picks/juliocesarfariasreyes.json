@@ -4,7 +4,7 @@
   "avatar": "data:image/jpeg;base64,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",
   "tagline": "Efecto nene",
   "email": "juliocesarfariasreyes@gmail.com",
-  "submittedAtUtc": "2026-06-19T03:20:35.711Z",
+  "submittedAtUtc": "2026-06-20T02:40:37.311Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -168,58 +168,58 @@
     },
     {
       "matchId": "match-033",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 2
     },
     {
       "matchId": "match-034",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-035",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-036",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 3,
+      "awayScore": 0
     },
     {
       "matchId": "match-037",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-038",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-039",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-040",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 2
     },
     {
       "matchId": "match-041",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 0
     },
     {
       "matchId": "match-042",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 4,
+      "awayScore": 0
     },
     {
       "matchId": "match-043",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-044",
