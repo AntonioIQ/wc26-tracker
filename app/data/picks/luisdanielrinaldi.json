@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "ldrinaldi73@gmail.com",
-  "submittedAtUtc": "2026-06-20T05:47:23.518Z",
+  "submittedAtUtc": "2026-06-20T05:48:37.090Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -178,8 +178,8 @@
     },
     {
       "matchId": "match-035",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 0
     },
     {
       "matchId": "match-036",
