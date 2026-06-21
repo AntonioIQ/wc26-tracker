@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "angelofiesco@hotmail.com",
-  "submittedAtUtc": "2026-06-21T16:33:11.842Z",
+  "submittedAtUtc": "2026-06-21T16:33:21.457Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -223,8 +223,8 @@
     },
     {
       "matchId": "match-044",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 1
     },
     {
       "matchId": "match-045",
