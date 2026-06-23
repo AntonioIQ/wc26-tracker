@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "ldrinaldi73@gmail.com",
-  "submittedAtUtc": "2026-06-22T05:45:29.017Z",
+  "submittedAtUtc": "2026-06-23T05:27:39.484Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -228,23 +228,23 @@
     },
     {
       "matchId": "match-045",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 3,
+      "awayScore": 0
     },
     {
       "matchId": "match-046",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 3,
+      "awayScore": 1
     },
     {
       "matchId": "match-047",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 2
     },
     {
       "matchId": "match-048",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1
     },
     {
       "matchId": "match-049",
