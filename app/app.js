@@ -74,7 +74,7 @@ const SHORT = {
 };
 
 const STAGE_LONG = {
-  "group":"FASE DE GRUPOS","round-of-32":"TREINTAIDOSAVOS","round-of-16":"OCTAVOS",
+  "group":"FASE DE GRUPOS","round-of-32":"DIECISEISAVOS","round-of-16":"OCTAVOS",
   "quarterfinal":"CUARTOS","quarter-final":"CUARTOS","semifinal":"SEMIFINAL","semi-final":"SEMIFINAL",
   "third-place":"3ER LUGAR","final":"GRAN FINAL",
 };
@@ -85,7 +85,7 @@ const STAGE_BADGE = {
   "third-place":"badge-final","final":"badge-final",
 };
 const STAGE_SHORT = {
-  "group":"GRUPOS","round-of-32":"32avos","round-of-16":"Octavos",
+  "group":"GRUPOS","round-of-32":"16avos","round-of-16":"Octavos",
   "quarterfinal":"Cuartos","quarter-final":"Cuartos",
   "semifinal":"Semis","semi-final":"Semis","third-place":"3er Lugar","final":"FINAL",
 };
@@ -829,7 +829,7 @@ function renderCalendario() {
   const legendHTML = `
     <div class="cal-legend">
       <div class="cal-leg-item"><span class="dot" style="background:var(--accent-2)"></span>Grupos</div>
-      <div class="cal-leg-item"><span class="dot" style="background:var(--accent)"></span>32avos</div>
+      <div class="cal-leg-item"><span class="dot" style="background:var(--accent)"></span>16avos</div>
       <div class="cal-leg-item"><span class="dot" style="background:var(--accent-3)"></span>Octavos / Semis</div>
       <div class="cal-leg-item"><span class="dot" style="background:var(--accent-4)"></span>Cuartos / Final</div>
     </div>`;
@@ -844,7 +844,7 @@ function renderCalendario() {
 // ────────────────── BRACKET ──────────────────
 function renderBracket() {
   const rounds = [
-    { id: "round-of-32", label: "32avos de Final" },
+    { id: "round-of-32", label: "Dieciseisavos de Final" },
     { id: "round-of-16", label: "Octavos de Final" },
     { id: "quarterfinal", label: "Cuartos de Final" },
     { id: "semifinal", label: "Semifinales" },
