@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "victorm1608@gmail.com",
-  "submittedAtUtc": "2026-06-25T00:08:54.502Z",
+  "submittedAtUtc": "2026-06-26T01:10:15.445Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -298,13 +298,13 @@
     },
     {
       "matchId": "match-059",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 2
     },
     {
       "matchId": "match-060",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 2
     },
     {
       "matchId": "match-061",
