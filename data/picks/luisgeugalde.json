@@ -4,7 +4,7 @@
   "avatar": "🔥",
   "tagline": "⚽",
   "email": "luisgeugalde@gmail.com",
-  "submittedAtUtc": "2026-06-27T05:51:56.727Z",
+  "submittedAtUtc": "2026-06-27T05:58:03.264Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -353,7 +353,7 @@
     },
     {
       "matchId": "match-070",
-      "homeScore": 0,
+      "homeScore": 2,
       "awayScore": 0
     },
     {
