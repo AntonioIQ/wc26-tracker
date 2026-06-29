@@ -1,5 +1,51 @@
 {
-  "results": [],
+  "results": [
+    {
+      "matchId": "match-040",
+      "status": "finished",
+      "homeScore": 1,
+      "awayScore": 3,
+      "winner": "away",
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": "away",
+      "source": "manual-verified",
+      "updatedAtUtc": "2026-06-22T18:00:00.000Z"
+    },
+    {
+      "matchId": "match-041",
+      "status": "finished",
+      "homeScore": 2,
+      "awayScore": 0,
+      "winner": "home",
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": "home",
+      "source": "manual-verified",
+      "updatedAtUtc": "2026-06-22T20:00:00.000Z"
+    },
+    {
+      "matchId": "match-045",
+      "status": "finished",
+      "homeScore": 5,
+      "awayScore": 0,
+      "winner": "home",
+      "duration": "regular",
+      "extraHome": null,
+      "extraAway": null,
+      "penHome": null,
+      "penAway": null,
+      "qualifiedTeam": "home",
+      "source": "manual-verified",
+      "updatedAtUtc": "2026-06-23T20:00:00.000Z"
+    }
+  ],
   "notes": [
     "Este archivo tiene prioridad sobre cualquier actualizacion automatizada."
   ]

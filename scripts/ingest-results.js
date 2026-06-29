@@ -17,6 +17,7 @@
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
+const { resolveBracket } = require("./lib/resolve-bracket");
 
 const rootDir = path.resolve(__dirname, "..");
 const dataDir = path.join(rootDir, "data");
@@ -229,9 +230,15 @@ function findLocalMatchId(apiMatch, localMatches) {
     const localHome = normTeam(local.homeTeam);
     const localAway = normTeam(local.awayTeam);
 
-    if ((hit(localHome, apiHome) && hit(localAway, apiAway)) ||
-        (hit(localHome, apiAway) && hit(localAway, apiHome))) {
-      return local.id;
+    // Misma orientación local/visitante que la API
+    if (hit(localHome, apiHome) && hit(localAway, apiAway)) {
+      return { id: local.id, flipped: false };
+    }
+    // Orientación invertida: la API trae home/away al revés que nosotros.
+    // Devolvemos flipped para reorientar el marcador a NUESTRO home/away (que es
+    // contra el que se hicieron los picks).
+    if (hit(localHome, apiAway) && hit(localAway, apiHome)) {
+      return { id: local.id, flipped: true };
     }
   }
   return null;
@@ -256,21 +263,28 @@ async function main() {
   }
 
   const matchesData = readJson("matches.json");
-  const localMatches = matchesData.matches || [];
   const existingResults = readJson("results.json");
   const resultMap = new Map(
     (existingResults.results || []).map((r) => [r.matchId, r])
   );
 
+  // Resolvemos los equipos reales de la fase eliminatoria a partir de la tabla
+  // de grupos y los resultados ya conocidos. Sin esto, los partidos de knockout
+  // conservan sus placeholders ("2nd Group A") y NUNCA mapean contra la API
+  // (que ya trae equipos reales), por lo que sus resultados no se ingieren.
+  const localMatches = resolveBracket(matchesData.matches || [], existingResults.results || []);
+
   let updated = 0;
   let skipped = 0;
 
   for (const apiMatch of apiMatches) {
-    const localId = findLocalMatchId(apiMatch, localMatches);
-    if (!localId) {
+    const localHit = findLocalMatchId(apiMatch, localMatches);
+    if (!localHit) {
       skipped++;
       continue;
     }
+    const localId = localHit.id;
+    const flipped = localHit.flipped;
 
     const status = mapStatus(apiMatch.status);
     const score = apiMatch.score || {};
@@ -284,24 +298,29 @@ async function main() {
     // football-data a veces lo devuelve nulo (o como objeto {home:null,away:null})
     // y deja el marcador solo en fullTime; por eso el fallback es por campo con ??
     // (no con ||, que elegiria un objeto regularTime "truthy" con valores nulos).
-    const homeScore = regular.home ?? full.home ?? null;
-    const awayScore = regular.away ?? full.away ?? null;
+    // Si flipped, la API trae home/away al revés que nosotros: reorientamos todos
+    // los marcadores a NUESTRO home/away (contra el que se hicieron los picks).
+    const rawHome = regular.home ?? full.home ?? null;
+    const rawAway = regular.away ?? full.away ?? null;
+    const homeScore = flipped ? rawAway : rawHome;
+    const awayScore = flipped ? rawHome : rawAway;
 
     // Info de eliminatoria: prórroga, penales, clasificado
     const isKnockout = duration !== "REGULAR";
-    const extraHome = extra.home ?? null;
-    const extraAway = extra.away ?? null;
-    const penHome = penalties.home ?? null;
-    const penAway = penalties.away ?? null;
+    const extraHome = flipped ? (extra.away ?? null) : (extra.home ?? null);
+    const extraAway = flipped ? (extra.home ?? null) : (extra.away ?? null);
+    const penHome = flipped ? (penalties.away ?? null) : (penalties.home ?? null);
+    const penAway = flipped ? (penalties.home ?? null) : (penalties.away ?? null);
 
-    // Determinar clasificado en eliminatoria
+    // Determinar clasificado en eliminatoria (en NUESTRA orientación)
     let qualifiedTeam = null;
     if (status === "finished" && isKnockout) {
       const apiWinner = score.winner;
-      if (apiWinner === "HOME_TEAM") qualifiedTeam = "home";
-      else if (apiWinner === "AWAY_TEAM") qualifiedTeam = "away";
+      let w = apiWinner === "HOME_TEAM" ? "home" : apiWinner === "AWAY_TEAM" ? "away" : null;
+      if (w && flipped) w = w === "home" ? "away" : "home";
+      qualifiedTeam = w;
     } else if (status === "finished") {
-      // Partido decidido en 90 min
+      // Partido decidido en 90 min (homeScore/awayScore ya reorientados)
       if (homeScore !== null && awayScore !== null && homeScore !== awayScore) {
         qualifiedTeam = homeScore > awayScore ? "home" : "away";
       }

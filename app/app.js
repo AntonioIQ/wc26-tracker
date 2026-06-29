@@ -705,6 +705,125 @@ function buildStandings(matches) {
   return Object.values(t).sort((a,b) => b.pts - a.pts || (b.gf-b.gc) - (a.gf-a.gc) || b.gf - a.gf);
 }
 
+// ────────────────── RESOLUCIÓN DE LLAVES ──────────────────
+// Los partidos de eliminatoria vienen con placeholders ("1st Group A",
+// "Best 3rd (A/B/C/D/F)", "W74", "L101"). Esta función calcula los equipos
+// reales a partir de la tabla de grupos y propaga ganadores/perdedores.
+// Solo resuelve lo que ya está matemáticamente decidido; el resto queda en
+// placeholder (shortName() lo formatea como "1° GRUPO A", "MEJOR 3°", etc.).
+
+// Slots de R32 que reciben un "mejor tercero": id de partido → grupos elegibles.
+const THIRD_SLOTS = {
+  "match-074": ["A","B","C","D","F"],
+  "match-077": ["C","D","F","G","H"],
+  "match-079": ["C","E","F","H","I"],
+  "match-080": ["E","H","I","J","K"],
+  "match-081": ["B","E","F","I","J"],
+  "match-082": ["A","E","H","I","J"],
+  "match-085": ["E","F","G","I","J"],
+  "match-087": ["D","E","I","J","L"],
+};
+// Asignación oficial FIFA por combinación de grupos cuyo 3° clasifica (495
+// combinaciones). Anclamos la combinación real del torneo; si los resultados
+// arrojaran otra, caemos a un emparejamiento que respeta los grupos elegibles.
+const THIRD_ALLOCATION = {
+  // combinación real WC2026: terceros de B,D,E,F,I,J,K,L
+  "BDEFIJKL": { "match-074":"D","match-077":"F","match-079":"E","match-080":"K","match-081":"B","match-082":"I","match-085":"J","match-087":"L" },
+};
+
+// Empareja (backtracking) grupos clasificados con slots respetando elegibilidad.
+function matchThirdsToSlots(qualGroups) {
+  const slotIds = Object.keys(THIRD_SLOTS);
+  const out = {};
+  const used = new Set();
+  function bt(i) {
+    if (i === slotIds.length) return used.size === qualGroups.length;
+    const sid = slotIds[i];
+    for (const g of THIRD_SLOTS[sid]) {
+      if (qualGroups.includes(g) && !used.has(g)) {
+        used.add(g); out[sid] = g;
+        if (bt(i + 1)) return true;
+        used.delete(g); delete out[sid];
+      }
+    }
+    return false;
+  }
+  return bt(0) ? out : null;
+}
+
+function resolveBracket(matches) {
+  const byId = new Map(matches.map(m => [m.id, m]));
+  const pad3 = (n) => String(n).padStart(3, "0");
+  const isFinished = (m) => m.displayStatus === "finished" || m.displayStatus === "FINISHED";
+
+  // 1) Tabla de cada grupo
+  const groups = {}, standings = {}, groupDone = {};
+  matches.forEach(m => { if (normalizeStage(m.stage) === "group") (groups[m.group] = groups[m.group] || []).push(m); });
+  for (const [g, ms] of Object.entries(groups)) {
+    standings[g] = buildStandings(ms);
+    groupDone[g] = ms.every(isFinished);
+  }
+  const allGroupsDone = Object.keys(groups).length > 0 && Object.values(groupDone).every(Boolean);
+
+  // 2) Mejores terceros (solo cuando todos los grupos terminaron)
+  let thirdByMatch = {};
+  if (allGroupsDone) {
+    // ojo: los objetos de buildStandings ya usan `g` (partidos ganados), por eso
+    // la letra del grupo va en `grp` para no pisarla con el spread.
+    const thirds = Object.entries(standings)
+      .filter(([, t]) => t.length >= 3)
+      .map(([grp, t]) => ({ grp, ...t[2] }))
+      .sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc) || b.gf - a.gf);
+    const qualGroups = thirds.slice(0, 8).map(x => x.grp);
+    const key = [...qualGroups].sort().join("");
+    const alloc = THIRD_ALLOCATION[key] || matchThirdsToSlots(qualGroups);
+    if (alloc) {
+      const teamByGroup = Object.fromEntries(thirds.map(x => [x.grp, x.name]));
+      for (const [sid, g] of Object.entries(alloc)) thirdByMatch[sid] = teamByGroup[g];
+    }
+  }
+
+  // 3) Ganador / perdedor de un partido ya resuelto y terminado
+  const teamResolved = (name) => name && !/Group [A-L]|Best 3rd|^[WL]\d+/.test(name);
+  const winnerOf = (m) => {
+    if (!m || !isFinished(m)) return null;
+    const r = m.result || {};
+    const q = r.qualifiedTeam || (r.homeScore > r.awayScore ? "home" : r.awayScore > r.homeScore ? "away" : null);
+    if (!q) return null;
+    const name = q === "home" ? m.homeTeam : m.awayTeam;
+    return teamResolved(name) ? name : null;
+  };
+  const loserOf = (m) => {
+    if (!m || !isFinished(m)) return null;
+    const r = m.result || {};
+    const q = r.qualifiedTeam || (r.homeScore > r.awayScore ? "home" : r.awayScore > r.homeScore ? "away" : null);
+    if (!q) return null;
+    const name = q === "home" ? m.awayTeam : m.homeTeam;
+    return teamResolved(name) ? name : null;
+  };
+
+  // 4) Resolver un placeholder individual → nombre real o null
+  const resolveSlot = (token, matchId) => {
+    let mm;
+    if ((mm = /^1st Group ([A-L])$/.exec(token))) return groupDone[mm[1]] ? standings[mm[1]][0].name : null;
+    if ((mm = /^2nd Group ([A-L])$/.exec(token))) return groupDone[mm[1]] ? standings[mm[1]][1].name : null;
+    if (/^Best 3rd/.test(token)) return thirdByMatch[matchId] || null;
+    if ((mm = /^W(\d+)$/.exec(token))) return winnerOf(byId.get("match-" + pad3(mm[1])));
+    if ((mm = /^L(\d+)$/.exec(token))) return loserOf(byId.get("match-" + pad3(mm[1])));
+    return null;
+  };
+
+  // 5) Recorrer en orden de id (grupos→R32→R16→…→final) mutando en el sitio,
+  // para que cada ronda lea los equipos ya resueltos de la anterior.
+  const ko = matches.filter(m => normalizeStage(m.stage) !== "group")
+    .sort((a, b) => a.id.localeCompare(b.id));
+  for (const m of ko) {
+    if (!teamResolved(m.homeTeam)) { const r = resolveSlot(m.homeTeam, m.id); if (r) m.homeTeam = r; }
+    if (!teamResolved(m.awayTeam)) { const r = resolveSlot(m.awayTeam, m.id); if (r) m.awayTeam = r; }
+  }
+  return matches;
+}
+
 function renderGrupos() {
   const groupMatches = state.matches.filter(m => normalizeStage(m.stage) === "group");
   const groups = {};
@@ -1138,7 +1257,7 @@ async function refreshSharedData() {
     const results = rd.results || [];
     state.results = {};
     results.forEach((r) => { state.results[r.matchId] = r; });
-    state.matches = mergeData(state.rawMatches, results, od);
+    state.matches = resolveBracket(mergeData(state.rawMatches, results, od));
     state.leaderboard = ld;
     return true;
   } catch { return false; }
@@ -1707,7 +1826,7 @@ async function boot() {
     state.rawMatches = md.matches || [];
     state.results = {};
     (rd.results || []).forEach(r => { state.results[r.matchId] = r; });
-    state.matches = mergeData(state.rawMatches, rd.results || [], od);
+    state.matches = resolveBracket(mergeData(state.rawMatches, rd.results || [], od));
     state.venues = vd.venues || [];
     state.leaderboard = ld;
 
