@@ -364,17 +364,21 @@
           <button class="icon-btn" id="rules-close" style="width:30px;height:30px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
         </div>
         <div class="modal-body">
-          <h3>Puntuación</h3>
+          <h3>Puntuación (fase de grupos)</h3>
           <ul>
-            <li><div><div class="rule-pts"><span class="chip three">+3</span></div><strong>Resultado exacto.</strong> Predices 2–1 y termina 2–1.</div></li>
-            <li><div><div class="rule-pts"><span class="chip one">+1</span></div><strong>Resultado correcto sin marcador.</strong> Predices 2–0 y termina 3–1 (ambos victoria local).</div></li>
+            <li><div><div class="rule-pts"><span class="chip three">+3</span></div><strong>Marcador exacto.</strong> Predices 2–1 y termina 2–1.</div></li>
+            <li><div><div class="rule-pts"><span class="chip one">+1</span></div><strong>Resultado correcto.</strong> Aciertas quién gana (o el empate) pero no el marcador. Ej.: predices 2–0 y queda 3–1.</div></li>
             <li><div><div class="rule-pts"><span class="chip zero">0</span></div><strong>Fallo.</strong></div></li>
           </ul>
-          <h3>Eliminatoria</h3>
+          <h3>Eliminatoria (desde 16avos)</h3>
           <ul>
-            <li>El marcador que cuenta es el de los <strong>90 minutos</strong> (tiempo reglamentario).</li>
-            <li>Si hay empate al 90, eliges quién clasifica para <strong>+1 punto extra</strong>.</li>
-            <li>Prórroga y penales no afectan el marcador.</li>
+            <li>Solo cuenta el marcador de los <strong>90 minutos</strong>. La prórroga y los penales <strong>no cambian el marcador</strong>: solo definen quién avanza.</li>
+            <li>Si predices un <strong>empate</strong>, aparece un botón para elegir <strong>quién crees que avanza</strong>, por si el partido se va a tiempos extra.</li>
+          </ul>
+          <ul>
+            <li><div><div class="rule-pts"><span class="chip three">+3</span></div><strong>Empate exacto.</strong> Predices 1–1 y al 90 va 1–1. Ya son 3 pts; el clasificado no suma más.</div></li>
+            <li><div><div class="rule-pts"><span class="chip two">+2</span></div><strong>Empate + clasificado.</strong> Predices 0–0, al 90 va 1–1 y aciertas quién avanza: 1 (empate) + 1 (clasificado).</div></li>
+            <li><div><div class="rule-pts"><span class="chip one">+1</span></div><strong>Solo el empate.</strong> Aciertas que quedó empate pero fallas quién avanza (o no lo elegiste).</div></li>
           </ul>
           <h3>Cierre de picks</h3>
           <ul>

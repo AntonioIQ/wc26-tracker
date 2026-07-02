@@ -379,7 +379,8 @@
     {
       "matchId": "match-075",
       "homeScore": 2,
-      "awayScore": 2
+      "awayScore": 2,
+      "qualifiedTeam": "away"
     },
     {
       "matchId": "match-076",

@@ -1533,16 +1533,17 @@ function calcPickPoints(pick, m) {
   if (!m.result || m.result.homeScore == null) return 0;
   const rh = m.result.homeScore, ra = m.result.awayScore;
   const ph = Number(pick.homeScore), pa = Number(pick.awayScore);
+  const exact = rh === ph && ra === pa;
   let pts;
-  if (rh === ph && ra === pa) pts = 3;
+  if (exact) pts = 3;
   else if (Math.sign(rh - ra) === Math.sign(ph - pa)) pts = 1;
   else pts = 0;
-  // +1 por clasificado: solo en eliminatoria, si el pick fue empate al 90, el
-  // partido quedó empatado al 90 y se acertó quién avanzó. Debe coincidir con
-  // scorePick() de scripts/score.js.
+  // +1 por clasificado: solo en eliminatoria, cuando NO fue marcador exacto pero
+  // sí acertaste el empate al 90 (signo) y quién avanzó. Si el marcador fue
+  // exacto ya son 3 y el clasificado es irrelevante. Coincide con score.js.
   const isKO = normalizeStage(m.stage) !== "group";
   const r = m.result;
-  if (isKO && r.qualifiedTeam && pick.qualifiedTeam &&
+  if (isKO && !exact && r.qualifiedTeam && pick.qualifiedTeam &&
       rh === ra && ph === pa && pick.qualifiedTeam === r.qualifiedTeam) {
     pts += 1;
   }

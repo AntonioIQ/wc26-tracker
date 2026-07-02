@@ -2026,5 +2026,6 @@ body {
   border: 1px solid var(--border);
 }
 .rule-pts .chip.three { color: var(--accent-2); border-color: color-mix(in oklab, var(--accent-2) 40%, var(--border)); }
+.rule-pts .chip.two { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 40%, var(--border)); }
 .rule-pts .chip.one { color: var(--accent-3); border-color: color-mix(in oklab, var(--accent-3) 40%, var(--border)); }
 .rule-pts .chip.zero { color: var(--text-muted); }

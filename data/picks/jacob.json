@@ -414,7 +414,8 @@
     {
       "matchId": "match-082",
       "homeScore": 1,
-      "awayScore": 1
+      "awayScore": 1,
+      "qualifiedTeam": "home"
     },
     {
       "matchId": "match-083",
