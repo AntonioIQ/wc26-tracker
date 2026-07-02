@@ -885,10 +885,10 @@ body {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--border);
-  padding: 6px 8px 12px;
+  padding: 6px 6px 12px;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 2px;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
   z-index: 10;
 }
 .bn-btn {
@@ -896,16 +896,23 @@ body {
   border: none;
   color: var(--text-muted);
   font-family: var(--font-body);
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 700;
   cursor: pointer;
-  padding: 6px 2px;
+  padding: 6px 1px;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   border-radius: 10px;
   transition: all 0.15s;
   position: relative;
 }
-.bn-btn svg { width: 18px; height: 18px; }
+.bn-btn svg { width: 17px; height: 17px; }
+.br-hint {
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 8px 4px 4px;
+}
 .bn-btn:hover { color: var(--text-soft); }
 .bn-btn.active {
   color: var(--accent);

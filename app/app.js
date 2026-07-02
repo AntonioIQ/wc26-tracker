@@ -322,10 +322,11 @@ async function loadWeatherBar() {
 const TABS = [
   { id: "picks", label: "Picks", svg: `<path d="m18 2 4 4-14 14H4v-4z"/>` },
   { id: "tabla", label: "Tabla", svg: `<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M6 4h12v7a6 6 0 0 1-12 0z"/><path d="M9 22h6M12 22v-4"/>` },
-  { id: "grupos", label: "Grupos", svg: `<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>` },
+  { id: "radial", label: "Elim.", svg: `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/>` },
   { id: "calendario", label: "Calend.", svg: `<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>` },
   { id: "bracket", label: "Llaves", svg: `<path d="M6 3v6a3 3 0 0 0 3 3 3 3 0 0 1 3 3v6M18 3v6a3 3 0 0 1-3 3"/>` },
   { id: "sedes", label: "Sedes", svg: `<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>` },
+  { id: "grupos", label: "Grupos", svg: `<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>` },
 ];
 
 function renderBottomNav() {
@@ -352,6 +353,7 @@ function renderCurrentTab() {
     case "picks": renderPicks(); break;
     case "tabla": renderTabla(); break;
     case "grupos": renderGrupos(); break;
+    case "radial": renderRadial(); break;
     case "calendario": renderCalendario(); break;
     case "bracket": renderBracket(); break;
     case "sedes": renderSedes(); break;
@@ -992,8 +994,127 @@ function renderBracket() {
   }).join("");
 
   $("#tab-bracket").innerHTML = `
-    <div class="sec-title"><h2>Llaves</h2><span class="meta">60 partidos eliminatorios</span></div>
+    <div class="sec-title"><h2>Llaves</h2><span class="meta">32 partidos eliminatorios</span></div>
     <div class="bracket-rounds">${sections}</div>`;
+}
+
+// ────────────────── ELIMINATORIA RADIAL ──────────────────
+function renderRadial() {
+  const canRadial = !!window.d3;
+  $("#tab-radial").innerHTML = `
+    <div class="sec-title"><h2>Eliminatoria</h2><span class="meta">Camino al título</span></div>
+    ${canRadial ? `<div id="radial-body"></div>` :
+      `<div class="empty"><div class="icon">📡</div><div class="title">No se pudo cargar la vista</div><p>Revisa tu conexión e inténtalo de nuevo.</p></div>`}`;
+  if (canRadial) {
+    try { drawRadialBracket($("#radial-body")); }
+    catch (err) {
+      console.error("Radial bracket falló:", err);
+      $("#radial-body").innerHTML = `<div class="empty"><div class="icon">⚠️</div><div class="title">No se pudo dibujar el bracket</div><p>Intenta recargar la página.</p></div>`;
+    }
+  }
+}
+
+// Bracket radial (D3): 32 equipos de 16avos en el anillo exterior; los ganadores
+// avanzan hacia el centro (16avos→octavos→cuartos→semis→final) con el trofeo al
+// centro. La ESTRUCTURA sale del cableado fijo (state.rawMatches con "W74" etc.);
+// los equipos y ganadores salen de state.matches (ya resuelto, con .result).
+function drawRadialBracket(host) {
+  if (!state.rawMatches || !state.rawMatches.length) { host.innerHTML = ""; return; }
+  const rawById = new Map(state.rawMatches.map(m => [m.id, m]));
+  const resById = new Map(state.matches.map(m => [m.id, m]));
+  const pad3 = n => String(n).padStart(3, "0");
+  const teamResolved = (name) => name && !/Group [A-L]|Best 3rd|^[WL]\d+/.test(name);
+  const isFin = (m) => m && (m.displayStatus === "finished" || m.displayStatus === "FINISHED");
+
+  function winnerName(matchId) {
+    const m = resById.get(matchId);
+    if (!isFin(m) || !m.result) return null;
+    const r = m.result;
+    const side = (r.qualifiedTeam === "home" || r.qualifiedTeam === "away") ? r.qualifiedTeam
+      : (r.homeScore > r.awayScore ? "home" : r.awayScore > r.homeScore ? "away" : null);
+    if (!side) return null;
+    const name = side === "home" ? m.homeTeam : m.awayTeam;
+    return teamResolved(name) ? name : null;
+  }
+
+  // Estructura fija desde el cableado crudo (siempre 32 hojas).
+  function node(matchId) {
+    const m = rawById.get(matchId);
+    return { matchId, children: [child(m.homeTeam, matchId, "home"), child(m.awayTeam, matchId, "away")] };
+  }
+  function child(token, parentId, side) {
+    const mm = /^W(\d+)$/.exec(token);
+    return mm ? node("match-" + pad3(mm[1])) : { leafMatchId: parentId, side };
+  }
+  const rootData = node("match-104");
+
+  // Equipo que ocupa un nodo: hoja = participante de 16avos; interno = ganador.
+  function teamOf(d) {
+    if (d.data.leafMatchId) {
+      const m = resById.get(d.data.leafMatchId);
+      const name = d.data.side === "home" ? m.homeTeam : m.awayTeam;
+      return teamResolved(name) ? name : null;
+    }
+    return winnerName(d.data.matchId);
+  }
+  const matchIdOf = (d) => d.data.leafMatchId || d.data.matchId;
+
+  // Layout: d3.cluster pone las hojas en el borde y la raíz al centro.
+  const W = Math.max(280, host.clientWidth || 340);
+  const boxSide = Math.min(W, 560);
+  const R = boxSide / 2 - 22;
+  const root = d3.cluster().size([2 * Math.PI, R])(d3.hierarchy(rootData));
+  // Ángulos uniformes para cerrar el círculo sin encimar la costura: hojas
+  // equiespaciadas y cada nodo interno al promedio angular de sus hijos.
+  const leaves = root.leaves();
+  leaves.forEach((lf, i) => { lf.x = (i + 0.5) / leaves.length * 2 * Math.PI; });
+  root.eachAfter(d => { if (d.children) d.x = d.children.reduce((s, c) => s + c.x, 0) / d.children.length; });
+  const badgeR = Math.max(9, Math.min(15, R / 12));
+  const advanced = (d) => { const t = teamOf(d); return !!t && t === teamOf(d.parent); };
+
+  const svg = d3.select(host).html("").append("svg")
+    .attr("viewBox", [-boxSide / 2, -boxSide / 2, boxSide, boxSide].join(" "))
+    .attr("width", "100%")
+    .style("display", "block")
+    .style("touch-action", "none")
+    .style("max-height", "78vh");
+  const g = svg.append("g");
+  svg.call(d3.zoom().scaleExtent([0.75, 4]).on("zoom", (e) => g.attr("transform", e.transform)));
+
+  // Conectores radiales; se resalta el tramo del equipo que avanzó.
+  const linkGen = d3.linkRadial().angle(d => d.x).radius(d => d.y);
+  g.append("g").selectAll("path").data(root.links()).join("path")
+    .attr("d", linkGen)
+    .attr("fill", "none")
+    .attr("stroke", d => advanced(d.target) ? "var(--accent)" : "var(--border-strong)")
+    .attr("stroke-width", d => advanced(d.target) ? 2.4 : 1.2)
+    .attr("stroke-opacity", d => advanced(d.target) ? 0.95 : 0.45);
+
+  // Badges (todos menos la raíz; el centro es el trofeo).
+  const nodeSel = g.append("g").selectAll("g").data(root.descendants().filter(d => d.depth > 0)).join("g")
+    .attr("transform", d => { const p = d3.pointRadial(d.x, d.y); return `translate(${p[0]},${p[1]})`; })
+    .style("cursor", "pointer")
+    .on("click", (e, d) => { const id = matchIdOf(d); if (id) openMatchDrawer(id); });
+  nodeSel.append("title").text(d => { const t = teamOf(d); return t ? shortName(t) : "Por definir"; });
+  nodeSel.append("circle")
+    .attr("r", badgeR)
+    .attr("fill", "var(--bg-card-2)")
+    .attr("stroke", d => advanced(d) ? "var(--accent)" : (teamOf(d) ? "var(--border-strong)" : "var(--border)"))
+    .attr("stroke-width", d => advanced(d) ? 2 : 1.2);
+  nodeSel.append("text")
+    .attr("text-anchor", "middle").attr("dominant-baseline", "central")
+    .attr("font-size", badgeR * 1.2)
+    .text(d => { const t = teamOf(d); return t ? flag(t) : ""; });
+
+  // Centro: trofeo (+ anillo dorado si ya hay campeón).
+  const champ = winnerName("match-104");
+  if (champ) g.append("circle").attr("r", badgeR * 1.9).attr("fill", "none")
+    .attr("stroke", "var(--accent)").attr("stroke-width", 2).attr("stroke-opacity", 0.7);
+  g.append("text").attr("text-anchor", "middle").attr("dominant-baseline", "central")
+    .attr("font-size", badgeR * 2.4).text("🏆");
+
+  host.insertAdjacentHTML("beforeend",
+    `<div class="br-hint">Arrastra y pellizca para hacer zoom · toca un escudo para ver el partido${champ ? ` · 🏆 <strong>${escapeHTML(shortName(champ))}</strong>` : ""}</div>`);
 }
 
 // ────────────────── SEDES ──────────────────
