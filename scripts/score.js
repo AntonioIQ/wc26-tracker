@@ -53,15 +53,20 @@ function scorePick(pick, result, match) {
     }
   }
 
-  // Punto extra por clasificado en eliminatoria. Solo lo gana quien pronosticó
-  // empate al 90 pero SIN marcador exacto (si acertó el exacto ya tiene 3 y el
-  // clasificado es irrelevante), y además el partido quedó empatado al 90 y se
-  // definió en prórroga/penales hacia el equipo elegido.
+  // Punto extra por clasificado en eliminatoria: +1 por acertar quién avanza
+  // cuando el partido quedó empatado al 90 y se definió en prórroga/penales.
+  // El equipo que el usuario "eligió" se deduce de su pick: si puso un marcador
+  // decisivo, es el ganador de ese marcador; si predijo empate, es su selección
+  // explícita (pick.qualifiedTeam). No aplica si ya acertó el marcador exacto
+  // (en ese caso ya tiene 3 y el clasificado es irrelevante).
   const isKnockout = match && match.stage !== "group";
-  if (isKnockout && !exact && result.qualifiedTeam && pick.qualifiedTeam) {
-    const drewAt90 = result.homeScore === result.awayScore;
-    const pickedDraw = pick.homeScore === pick.awayScore;
-    if (drewAt90 && pickedDraw && pick.qualifiedTeam === result.qualifiedTeam) {
+  const drewAt90 = result.homeScore === result.awayScore;
+  if (isKnockout && !exact && drewAt90 && result.qualifiedTeam) {
+    let pickAdvancer;
+    if (pick.homeScore > pick.awayScore) pickAdvancer = "home";
+    else if (pick.awayScore > pick.homeScore) pickAdvancer = "away";
+    else pickAdvancer = pick.qualifiedTeam || null;
+    if (pickAdvancer && pickAdvancer === result.qualifiedTeam) {
       points += 1;
     }
   }
