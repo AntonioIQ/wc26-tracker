@@ -730,6 +730,61 @@ body {
   color: var(--accent-2);
 }
 .pc-input:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Selector de clasificado en eliminatoria (empate al 90) */
+.pc-qual {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pc-qual.is-hidden { display: none; }
+.pc-qual-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pc-qual-pts {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 10px;
+}
+.pc-qual-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pc-qual-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 8px;
+  background: var(--bg-card-soft);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 10px;
+  color: var(--text-soft);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.pc-qual-btn:hover:not(:disabled) { border-color: var(--accent); }
+.pc-qual-btn.active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 12%, var(--bg-card-soft));
+  color: var(--accent);
+}
+.pc-qual-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .pc-sep {
   font-family: var(--font-display);
   color: var(--text-muted);

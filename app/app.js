@@ -402,13 +402,7 @@ function pickCardHTML(m, opts = {}) {
   ].join(" ");
 
   let pts = null;
-  if (st.finished && m.result && filled) {
-    const rh = m.result.homeScore, ra = m.result.awayScore;
-    const ph = Number(pick.homeScore), pa = Number(pick.awayScore);
-    if (rh === ph && ra === pa) pts = 3;
-    else if (Math.sign(rh - ra) === Math.sign(ph - pa)) pts = 1;
-    else pts = 0;
-  }
+  if (st.finished && m.result && filled) pts = calcPickPoints(pick, m);
 
   const lockBadge = st.live ? "" :
     st.locked ? `<span class="lock-dot"></span><span style="font-size:9.5px;color:var(--accent-3);font-weight:700;letter-spacing:0.06em;white-space:nowrap">CERRADO</span>` :
@@ -443,6 +437,21 @@ function pickCardHTML(m, opts = {}) {
       <div class="pc-input" style="border-color:transparent;background:transparent;font-size:18px;${liveStyle}">${dispA}</div>
     </div>`;
 
+  // Selector de clasificado en eliminatoria: solo aparece cuando el pick es
+  // empate al 90 (mismo marcador local/visitante). En decisivo el que pasa es
+  // el que gana, así que no se pregunta. Guarda el LADO (home/away), no el
+  // nombre, para funcionar aunque el equipo aún sea placeholder ("2° Grupo A").
+  const isKO = stage !== "group";
+  const pickIsDraw = filled && Number(pick.homeScore) === Number(pick.awayScore);
+  const qualCol = (isKO && showInputs) ? `
+    <div class="pc-qual ${pickIsDraw ? "" : "is-hidden"}" data-stop data-qual-block="${m.id}">
+      <span class="pc-qual-label">Empate al 90' · ¿quién avanza? <span class="pc-qual-pts">+1</span></span>
+      <div class="pc-qual-opts">
+        <button type="button" class="pc-qual-btn ${pick?.qualifiedTeam === "home" ? "active" : ""}" ${st.locked ? "disabled" : ""} data-qual="${m.id}" data-qual-side="home">${homeFlag} ${escapeHTML(shortName(home))}</button>
+        <button type="button" class="pc-qual-btn ${pick?.qualifiedTeam === "away" ? "active" : ""}" ${st.locked ? "disabled" : ""} data-qual="${m.id}" data-qual-side="away">${awayFlag} ${escapeHTML(shortName(away))}</button>
+      </div>
+    </div>` : "";
+
   return `
     <div class="${cls}" data-match-id="${m.id}" data-open-match="${m.id}">
       <div class="pc-top">
@@ -470,6 +479,7 @@ function pickCardHTML(m, opts = {}) {
             </div>
           </div>
         </div>
+        ${qualCol}
       </div>
       <div class="pc-footer">
         <span class="pc-venue">
@@ -1110,7 +1120,7 @@ function renderDrawerTab(m, tab) {
         <div class="kv"><div class="k">Cierre</div><div class="v">${st.locked ? "Cerrado" : fmtCountdown(st.lk - Date.now())}</div></div>
       </div>
       <div style="margin-top:14px;font-size:11px;color:var(--text-muted);line-height:1.5">
-        <strong style="color:var(--text-soft)">Reglas rápidas:</strong> 3 pts marcador exacto · 1 pt resultado correcto · 0 si fallas. Cierre 1 seg. antes del kickoff.
+        <strong style="color:var(--text-soft)">Reglas rápidas:</strong> 3 pts marcador exacto · 1 pt resultado correcto · 0 si fallas.${normalizeStage(m.stage) !== "group" ? " Marcador al 90'; si empatas y aciertas quién avanza, +1." : ""} Cierre 1 seg. antes del kickoff.
       </div>`;
     return;
   }
@@ -1523,9 +1533,20 @@ function calcPickPoints(pick, m) {
   if (!m.result || m.result.homeScore == null) return 0;
   const rh = m.result.homeScore, ra = m.result.awayScore;
   const ph = Number(pick.homeScore), pa = Number(pick.awayScore);
-  if (rh === ph && ra === pa) return 3;
-  if (Math.sign(rh - ra) === Math.sign(ph - pa)) return 1;
-  return 0;
+  let pts;
+  if (rh === ph && ra === pa) pts = 3;
+  else if (Math.sign(rh - ra) === Math.sign(ph - pa)) pts = 1;
+  else pts = 0;
+  // +1 por clasificado: solo en eliminatoria, si el pick fue empate al 90, el
+  // partido quedó empatado al 90 y se acertó quién avanzó. Debe coincidir con
+  // scorePick() de scripts/score.js.
+  const isKO = normalizeStage(m.stage) !== "group";
+  const r = m.result;
+  if (isKO && r.qualifiedTeam && pick.qualifiedTeam &&
+      rh === ra && ph === pa && pick.qualifiedTeam === r.qualifiedTeam) {
+    pts += 1;
+  }
+  return pts;
 }
 
 // ────────────────── RULES MODAL ──────────────────
@@ -1647,7 +1668,17 @@ function buildPickPayload() {
     submittedAtUtc: new Date().toISOString(),
     picks: state.matches.map(m => {
       const p = merged[m.id] || {};
-      return { matchId: m.id, homeScore: p.homeScore ?? null, awayScore: p.awayScore ?? null };
+      const homeScore = p.homeScore ?? null;
+      const awayScore = p.awayScore ?? null;
+      const out = { matchId: m.id, homeScore, awayScore };
+      // Clasificado solo tiene sentido en eliminatoria con empate al 90: solo así
+      // el usuario tuvo derecho a elegir quién avanza. Evita arrastrar un valor
+      // viejo si el marcador dejó de ser empate.
+      const isKO = normalizeStage(m.stage) !== "group";
+      if (isKO && homeScore != null && homeScore === awayScore && p.qualifiedTeam) {
+        out.qualifiedTeam = p.qualifiedTeam;
+      }
+      return out;
     }),
   };
 }
@@ -1788,10 +1819,33 @@ function initEvents() {
       const raw = e.target.value;
       const v = raw === "" ? null : Math.max(0, Math.min(99, parseInt(raw, 10) || 0));
       const cur = displayPicks()[matchId] || {};
-      setPick(matchId, { ...cur, [side === "home" ? "homeScore" : "awayScore"]: v });
+      const next = { ...cur, [side === "home" ? "homeScore" : "awayScore"]: v };
+      setPick(matchId, next);
       // Live update has-value class on this input
       e.target.classList.toggle("has-value", v !== null);
+      // Mostrar/ocultar el selector de clasificado sin re-render (para no perder
+      // foco al escribir): visible solo si el pick quedó empate al 90.
+      const qb = document.querySelector(`[data-qual-block="${matchId}"]`);
+      if (qb) {
+        const isDraw = next.homeScore != null && next.awayScore != null && next.homeScore === next.awayScore;
+        qb.classList.toggle("is-hidden", !isDraw);
+      }
     }
+  });
+
+  // Selector de clasificado (¿quién avanza si hay empate al 90?)
+  $("#scroll-area").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-qual]");
+    if (!btn || btn.disabled) return;
+    const matchId = btn.dataset.qual;
+    const chosen = btn.dataset.qualSide;
+    const cur = displayPicks()[matchId] || {};
+    // toggle: volver a tocar el mismo lado lo deselecciona
+    const qualifiedTeam = cur.qualifiedTeam === chosen ? null : chosen;
+    setPick(matchId, { ...cur, qualifiedTeam });
+    const block = btn.closest("[data-qual-block]");
+    if (block) block.querySelectorAll(".pc-qual-btn").forEach(b =>
+      b.classList.toggle("active", b.dataset.qualSide === qualifiedTeam));
   });
 
   // Save bar

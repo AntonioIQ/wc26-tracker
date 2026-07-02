@@ -53,11 +53,14 @@ function scorePick(pick, result, match) {
     }
   }
 
-  // Punto extra por clasificado en eliminatoria (solo si empate al 90)
+  // Punto extra por clasificado en eliminatoria. Solo lo gana quien pronosticó
+  // empate al 90 (regla: solo los que ponen empate eligen quién avanza) Y el
+  // partido efectivamente quedó empatado al 90 y se definió en prórroga/penales.
   const isKnockout = match && match.stage !== "group";
   if (isKnockout && result.qualifiedTeam && pick.qualifiedTeam) {
     const drewAt90 = result.homeScore === result.awayScore;
-    if (drewAt90 && pick.qualifiedTeam === result.qualifiedTeam) {
+    const pickedDraw = pick.homeScore === pick.awayScore;
+    if (drewAt90 && pickedDraw && pick.qualifiedTeam === result.qualifiedTeam) {
       points += 1;
     }
   }
