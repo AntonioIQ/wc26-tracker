@@ -1069,52 +1069,197 @@ function drawRadialBracket(host) {
   const leaves = root.leaves();
   leaves.forEach((lf, i) => { lf.x = (i + 0.5) / leaves.length * 2 * Math.PI; });
   root.eachAfter(d => { if (d.children) d.x = d.children.reduce((s, c) => s + c.x, 0) / d.children.length; });
+  const maxDepth = d3.max(root.descendants(), d => d.depth);
   const badgeR = Math.max(9, Math.min(15, R / 12));
-  const advanced = (d) => { const t = teamOf(d); return !!t && t === teamOf(d.parent); };
+  const champ = winnerName("match-104");
+  const uid = "rb" + Math.random().toString(36).slice(2, 7); // ids únicos por render
 
+  const advanced = (d) => { const t = teamOf(d); return !!t && t === teamOf(d.parent); }; // avanzó a ocupar el nodo padre
+  const alive = (d) => d.depth > 0 && d.depth < maxDepth && !!teamOf(d) && !teamOf(d.parent); // sobreviviente en el frente
+  const linkTeam = (l) => (advanced(l.target) ? teamOf(l.target) : null);
+
+  host.style.position = "relative";
   const svg = d3.select(host).html("").append("svg")
     .attr("viewBox", [-boxSide / 2, -boxSide / 2, boxSide, boxSide].join(" "))
     .attr("width", "100%")
     .style("display", "block")
     .style("touch-action", "none")
-    .style("max-height", "78vh");
-  const g = svg.append("g");
-  svg.call(d3.zoom().scaleExtent([0.75, 4]).on("zoom", (e) => g.attr("transform", e.transform)));
+    .style("max-height", "80vh");
 
-  // Conectores radiales; se resalta el tramo del equipo que avanzó.
+  // ── defs: glow radial de fondo + bloom para caminos/escudos vivos ──
+  const defs = svg.append("defs");
+  const bg = defs.append("radialGradient").attr("id", uid + "-bg");
+  bg.append("stop").attr("offset", "0%").attr("stop-color", "var(--accent)").attr("stop-opacity", 0.16);
+  bg.append("stop").attr("offset", "45%").attr("stop-color", "var(--accent)").attr("stop-opacity", 0.05);
+  bg.append("stop").attr("offset", "100%").attr("stop-color", "var(--accent)").attr("stop-opacity", 0);
+  const glow = defs.append("filter").attr("id", uid + "-glow").attr("x", "-60%").attr("y", "-60%").attr("width", "220%").attr("height", "220%");
+  glow.append("feGaussianBlur").attr("stdDeviation", 2.4).attr("result", "b");
+  const fm = glow.append("feMerge");
+  fm.append("feMergeNode").attr("in", "b");
+  fm.append("feMergeNode").attr("in", "SourceGraphic");
+
+  const g = svg.append("g");
+  svg.call(d3.zoom().scaleExtent([0.7, 5]).on("zoom", (e) => g.attr("transform", e.transform)));
+
+  // Resplandor central (como la referencia).
+  g.append("circle").attr("r", R * 1.02).attr("fill", `url(#${uid}-bg)`).attr("pointer-events", "none");
+  for (let k = 1; k <= maxDepth; k++) // anillos guía sutiles
+    g.append("circle").attr("r", R * k / maxDepth).attr("fill", "none")
+      .attr("stroke", "var(--border)").attr("stroke-opacity", 0.35).attr("pointer-events", "none");
+
+  // ── Conectores radiales ──
   const linkGen = d3.linkRadial().angle(d => d.x).radius(d => d.y);
-  g.append("g").selectAll("path").data(root.links()).join("path")
+  const linkSel = g.append("g").selectAll("path").data(root.links()).join("path")
+    .attr("class", d => "rb-link" + (advanced(d.target) ? " rb-flow" : ""))
     .attr("d", linkGen)
     .attr("fill", "none")
     .attr("stroke", d => advanced(d.target) ? "var(--accent)" : "var(--border-strong)")
-    .attr("stroke-width", d => advanced(d.target) ? 2.4 : 1.2)
-    .attr("stroke-opacity", d => advanced(d.target) ? 0.95 : 0.45);
+    .attr("stroke-linecap", "round")
+    .attr("stroke-width", d => advanced(d.target) ? 2.6 : 1.1)
+    .attr("filter", d => advanced(d.target) ? `url(#${uid}-glow)` : null)
+    .style("opacity", 0);
+  linkSel.transition().delay(d => (maxDepth - d.target.depth) * 130 + 80).duration(420)
+    .style("opacity", d => advanced(d.target) ? 0.95 : 0.4);
 
-  // Badges (todos menos la raíz; el centro es el trofeo).
+  // ── Badges (todos menos la raíz; el centro es el trofeo) ──
+  // Outer <g>: posición (translate). Inner <g.rb-badge>: escala de entrada por
+  // CSS (pop escalonado por ronda). Halo pulsante va aparte, sin pop.
   const nodeSel = g.append("g").selectAll("g").data(root.descendants().filter(d => d.depth > 0)).join("g")
+    .attr("class", "rb-node")
     .attr("transform", d => { const p = d3.pointRadial(d.x, d.y); return `translate(${p[0]},${p[1]})`; })
-    .style("cursor", "pointer")
-    .on("click", (e, d) => { const id = matchIdOf(d); if (id) openMatchDrawer(id); });
-  nodeSel.append("title").text(d => { const t = teamOf(d); return t ? shortName(t) : "Por definir"; });
-  nodeSel.append("circle")
+    .style("cursor", "pointer");
+  nodeSel.filter(alive).append("circle").attr("class", "rb-halo")
+    .attr("r", badgeR).attr("fill", "none").attr("stroke", "var(--accent)").attr("stroke-width", 2);
+  const badge = nodeSel.append("g").attr("class", "rb-badge")
+    .style("animation-delay", d => (maxDepth - d.depth) * 120 + "ms");
+  badge.append("title").text(d => { const t = teamOf(d); return t ? shortName(t) : "Por definir"; });
+  badge.append("circle")
     .attr("r", badgeR)
     .attr("fill", "var(--bg-card-2)")
     .attr("stroke", d => advanced(d) ? "var(--accent)" : (teamOf(d) ? "var(--border-strong)" : "var(--border)"))
-    .attr("stroke-width", d => advanced(d) ? 2 : 1.2);
-  nodeSel.append("text")
+    .attr("stroke-width", d => advanced(d) ? 2.2 : 1.2)
+    .attr("filter", d => advanced(d) ? `url(#${uid}-glow)` : null);
+  badge.append("text")
     .attr("text-anchor", "middle").attr("dominant-baseline", "central")
     .attr("font-size", badgeR * 1.2)
     .text(d => { const t = teamOf(d); return t ? flag(t) : ""; });
 
-  // Centro: trofeo (+ anillo dorado si ya hay campeón).
-  const champ = winnerName("match-104");
-  if (champ) g.append("circle").attr("r", badgeR * 1.9).attr("fill", "none")
-    .attr("stroke", "var(--accent)").attr("stroke-width", 2).attr("stroke-opacity", 0.7);
-  g.append("text").attr("text-anchor", "middle").attr("dominant-baseline", "central")
-    .attr("font-size", badgeR * 2.4).text("🏆");
+  // ── Centro: copa del Mundial (+ anillo dorado si ya hay campeón) ──
+  if (champ) g.append("circle").attr("class", "rb-halo").attr("r", badgeR * 2.2).attr("fill", "none")
+    .attr("stroke", "var(--accent)").attr("stroke-width", 2.4);
+  const cup = badgeR * 3.6; // lado de la imagen de la copa (solo el trofeo)
+  g.append("image")
+    .attr("href", "./wc-trophy.png").attr("xlink:href", "./wc-trophy.png")
+    .attr("width", cup).attr("height", cup).attr("x", -cup / 2).attr("y", -cup / 2)
+    .attr("preserveAspectRatio", "xMidYMid meet")
+    .attr("pointer-events", "none")
+    .attr("filter", champ ? `url(#${uid}-glow)` : null);
+
+  // ── Foco interactivo: iluminar el recorrido de un equipo ──
+  let focusTeam = null;
+  const label = document.createElement("div");
+  label.className = "rb-label";
+  host.appendChild(label);
+  const stageReached = (t) => {
+    const chain = root.descendants().filter(d => teamOf(d) === t);
+    if (!chain.length) return "";
+    const minD = d3.min(chain, d => d.depth);
+    return { 0: "🏆 Campeón", 1: "Finalista", 2: "Semifinales", 3: "Cuartos", 4: "Octavos", 5: "16avos" }[minD] || "";
+  };
+  function setFocus(t) {
+    focusTeam = t;
+    nodeSel.classed("rb-dim", d => t && teamOf(d) !== t);
+    linkSel.classed("rb-dim", l => t && linkTeam(l) !== t);
+    if (t) { label.innerHTML = `${flag(t)} <strong>${escapeHTML(shortName(t))}</strong> · ${stageReached(t)}`; label.classList.add("show"); }
+    else label.classList.remove("show");
+  }
+  nodeSel.on("mouseenter", (e, d) => { if (!focusTeam) setFocus(teamOf(d)); })
+    .on("mouseleave", () => { if (!focusTeam) setFocus(null); })
+    .on("click", (e, d) => {
+      e.stopPropagation();
+      const t = teamOf(d);
+      if (t && t === focusTeam) { const id = matchIdOf(d); if (id) openMatchDrawer(id); } // 2° toque: abre el partido
+      else setFocus(t);
+    });
+  svg.on("click", () => setFocus(null)); // fondo: limpiar foco
 
   host.insertAdjacentHTML("beforeend",
-    `<div class="br-hint">Arrastra y pellizca para hacer zoom · toca un escudo para ver el partido${champ ? ` · 🏆 <strong>${escapeHTML(shortName(champ))}</strong>` : ""}</div>`);
+    `<div class="br-hint">Arrastra y pellizca para zoom · toca un escudo para iluminar su camino (2° toque abre el partido)${champ ? ` · 🏆 <strong>${escapeHTML(shortName(champ))}</strong>` : ""}</div>`);
+
+  renderTermometro(host);
+}
+
+// Descarga los picks de todos (uno por jugador) con caché corto. Los archivos
+// quedan congelados tras el cierre del partido, así que cachear es seguro.
+let _allPicksCache = { t: 0, data: null };
+async function fetchAllPicks() {
+  if (_allPicksCache.data && Date.now() - _allPicksCache.t < 120000) return _allPicksCache.data;
+  const entries = state.leaderboard?.entries || [];
+  const out = [];
+  await Promise.all(entries.map(async (entry) => {
+    try {
+      const r = await fetch(`${GH_RAW}/picks/${entry.userId}.json`, { cache: "no-store" });
+      if (!r.ok) return;
+      const data = await r.json();
+      out.push({ userId: entry.userId, picks: data.picks || [] });
+    } catch {}
+  }));
+  _allPicksCache = { t: Date.now(), data: out };
+  return out;
+}
+
+// 🌡️ Termómetro de la banda: para el próximo partido de eliminatoria, muestra
+// qué % de la quiniela ve pasar a cada equipo. Respeta la regla de "picks
+// ocultos hasta el cierre": si el partido no ha cerrado, solo muestra el teaser.
+function renderTermometro(host) {
+  const pending = state.matches
+    .filter(m => normalizeStage(m.stage) !== "group" && m.displayStatus !== "finished" && m.displayStatus !== "FINISHED")
+    .sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc));
+  const m = pending[0];
+  if (!m) return; // no hay más partidos de eliminatoria por jugar
+  const st = matchState(m);
+  const box = document.createElement("div");
+  box.className = "termo";
+  host.appendChild(box);
+
+  const head = `
+    <div class="termo-head">
+      <span class="termo-tag">🌡️ Termómetro de la banda · ${st.live ? "🔴 En vivo" : "Próximo"}</span>
+      <span class="termo-when">${st.live ? "en juego" : st.locked ? "cerrado" : fmtCountdown(st.lk - Date.now())}</span>
+    </div>
+    <div class="termo-teams">
+      <div class="termo-team"><span class="fl">${flag(m.homeTeam)}</span><span>${escapeHTML(shortName(m.homeTeam))}</span></div>
+      <span class="termo-vs">¿quién pasa?</span>
+      <div class="termo-team away"><span>${escapeHTML(shortName(m.awayTeam))}</span><span class="fl">${flag(m.awayTeam)}</span></div>
+    </div>`;
+
+  if (!st.locked) {
+    box.innerHTML = head + `<div class="termo-teaser">Se revela al <strong>cierre</strong> del partido 🔒</div>`;
+    return;
+  }
+
+  box.innerHTML = head + `<div class="termo-loading">Midiendo a la banda…</div>`;
+  fetchAllPicks().then(all => {
+    if (!box.isConnected) return;
+    let h = 0, a = 0;
+    for (const u of all) {
+      const p = (u.picks || []).find(x => x.matchId === m.id);
+      if (!p || p.homeScore == null || p.awayScore == null) continue;
+      const adv = p.homeScore > p.awayScore ? "home" : p.awayScore > p.homeScore ? "away" : (p.qualifiedTeam || null);
+      if (adv === "home") h++; else if (adv === "away") a++;
+    }
+    const total = h + a;
+    const slot = box.querySelector(".termo-loading");
+    if (!slot) return;
+    if (!total) { slot.outerHTML = `<div class="termo-teaser">Nadie se ha mojado todavía 🤷</div>`; return; }
+    const ph = Math.round(h / total * 100), pa = 100 - ph;
+    slot.outerHTML = `
+      <div class="termo-bar">
+        <div class="termo-fill home" style="width:${ph}%">${ph >= 14 ? ph + "%" : ""}</div>
+        <div class="termo-fill away" style="width:${pa}%">${pa >= 14 ? pa + "%" : ""}</div>
+      </div>
+      <div class="termo-foot">${total} de la banda ya se mojaron por quién avanza</div>`;
+  }).catch(() => {});
 }
 
 // ────────────────── SEDES ──────────────────
