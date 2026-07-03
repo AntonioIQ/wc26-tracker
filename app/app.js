@@ -1057,7 +1057,11 @@ function drawRadialBracket(host) {
     }
     return winnerName(d.data.matchId);
   }
-  const matchIdOf = (d) => d.data.leafMatchId || d.data.matchId;
+  // Partido que "juega" el equipo en ESE anillo = el partido del nodo padre
+  // (cuyo ganador ocupa el anillo de adentro). Así el México de 16avos abre
+  // México-Ecuador y el México de octavos abre México-Inglaterra, no el que ya
+  // ganó. La raíz (campeón) no tiene padre: cae a su propio partido (la final).
+  const matchIdOf = (d) => d.parent ? d.parent.data.matchId : d.data.matchId;
 
   // Layout: d3.cluster pone las hojas en el borde y la raíz al centro.
   const W = Math.max(280, host.clientWidth || 340);
