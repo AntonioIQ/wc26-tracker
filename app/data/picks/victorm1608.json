@@ -4,7 +4,7 @@
   "avatar": "⚽",
   "tagline": "",
   "email": "victorm1608@gmail.com",
-  "submittedAtUtc": "2026-07-01T21:49:40.698Z",
+  "submittedAtUtc": "2026-07-04T06:41:42.870Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -448,43 +448,44 @@
     },
     {
       "matchId": "match-089",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 3
     },
     {
       "matchId": "match-090",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 2
     },
     {
       "matchId": "match-091",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 1,
+      "qualifiedTeam": "home"
     },
     {
       "matchId": "match-092",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-093",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-094",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-095",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-096",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 1
     },
     {
       "matchId": "match-097",
