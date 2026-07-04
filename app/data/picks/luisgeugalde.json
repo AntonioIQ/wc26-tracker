@@ -4,7 +4,7 @@
   "avatar": "🔥",
   "tagline": "Y si sí ⚽🇲🇽",
   "email": "luisgeugalde@gmail.com",
-  "submittedAtUtc": "2026-07-03T05:41:26.612Z",
+  "submittedAtUtc": "2026-07-04T05:18:31.508Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -450,13 +450,13 @@
     },
     {
       "matchId": "match-089",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 0,
+      "awayScore": 3
     },
     {
       "matchId": "match-090",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 2
     },
     {
       "matchId": "match-091",
