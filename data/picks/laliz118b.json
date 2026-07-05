@@ -4,7 +4,7 @@
   "avatar": "⭐",
   "tagline": "\"La Vida es un riesgo, Carnal\"",
   "email": "laliz118b@yahoo.com.mx",
-  "submittedAtUtc": "2026-07-04T16:54:32.682Z",
+  "submittedAtUtc": "2026-07-05T17:11:53.398Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -458,13 +458,13 @@
     },
     {
       "matchId": "match-091",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 1,
+      "awayScore": 2
     },
     {
       "matchId": "match-092",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-093",
