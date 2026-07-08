@@ -318,6 +318,20 @@ async function main() {
       const apiWinner = score.winner;
       let w = apiWinner === "HOME_TEAM" ? "home" : apiWinner === "AWAY_TEAM" ? "away" : null;
       if (w && flipped) w = w === "home" ? "away" : "home";
+      // Fallback: football-data a veces marca el KO como FINISHED pero deja
+      // score.winner en null (p. ej. tanda de penales cuyo ganador no cerró).
+      // El marcador decisivo sigue llegando: primero la tanda (penHome/penAway,
+      // ya reorientados) si no es empate; si no, fullTime, que en estos partidos
+      // incluye el resultado de la tanda y su lado mayor es el clasificado.
+      if (!w) {
+        if (penHome !== null && penAway !== null && penHome !== penAway) {
+          w = penHome > penAway ? "home" : "away";
+        } else {
+          const fh = flipped ? (full.away ?? null) : (full.home ?? null);
+          const fa = flipped ? (full.home ?? null) : (full.away ?? null);
+          if (fh !== null && fa !== null && fh !== fa) w = fh > fa ? "home" : "away";
+        }
+      }
       qualifiedTeam = w;
     } else if (status === "finished") {
       // Partido decidido en 90 min (homeScore/awayScore ya reorientados)
