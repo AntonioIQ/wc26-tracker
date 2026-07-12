@@ -298,10 +298,17 @@ async function main() {
     // football-data a veces lo devuelve nulo (o como objeto {home:null,away:null})
     // y deja el marcador solo en fullTime; por eso el fallback es por campo con ??
     // (no con ||, que elegiria un objeto regularTime "truthy" con valores nulos).
+    // OJO: en prórroga, fullTime INCLUYE los goles del tiempo extra, asi que si
+    // falta regularTime derivamos los 90' restando extraTime (fullTime - extraTime).
+    // Sin esto, un partido empatado al 90 y resuelto en prórroga se calificaria
+    // contra el marcador final (con prórroga) en vez del de los 90'.
     // Si flipped, la API trae home/away al revés que nosotros: reorientamos todos
     // los marcadores a NUESTRO home/away (contra el que se hicieron los picks).
-    const rawHome = regular.home ?? full.home ?? null;
-    const rawAway = regular.away ?? full.away ?? null;
+    const isET = duration === "EXTRA_TIME";
+    const full90Home = (isET && full.home != null && extra.home != null) ? full.home - extra.home : full.home;
+    const full90Away = (isET && full.away != null && extra.away != null) ? full.away - extra.away : full.away;
+    const rawHome = regular.home ?? full90Home ?? null;
+    const rawAway = regular.away ?? full90Away ?? null;
     const homeScore = flipped ? rawAway : rawHome;
     const awayScore = flipped ? rawHome : rawAway;
 
