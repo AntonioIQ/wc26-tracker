@@ -4,7 +4,7 @@
   "avatar": "🔥",
   "tagline": "Nos volvieron a ilusionar 🇲🇽",
   "email": "luisgeugalde@gmail.com",
-  "submittedAtUtc": "2026-07-13T00:29:18.680Z",
+  "submittedAtUtc": "2026-07-18T00:06:12.226Z",
   "picks": [
     {
       "matchId": "match-001",
@@ -524,8 +524,8 @@
     },
     {
       "matchId": "match-103",
-      "homeScore": null,
-      "awayScore": null
+      "homeScore": 2,
+      "awayScore": 1
     },
     {
       "matchId": "match-104",
